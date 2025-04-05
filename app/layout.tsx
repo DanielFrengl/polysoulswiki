@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import NavBar from "@/ui/components/NavBar";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +29,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="relative h-screen bg-[url(/background/backgroundpoly.png)] bg-cover bg-center">
+          {/* Blur Overlay */}
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm z-0" />
+          <AuthProvider>
+            <div className="relative z-10 flex flex-col items-center justify-center">
+              <NavBar />
+              {children}
+            </div>
+          </AuthProvider>
+        </div>
       </body>
     </html>
   );

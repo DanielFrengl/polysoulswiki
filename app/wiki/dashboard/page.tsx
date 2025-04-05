@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 export default function WikiDashboard() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState("");
   const router = useRouter();
 
   const slugify = (text: string) =>
@@ -41,6 +42,7 @@ export default function WikiDashboard() {
     const { error: pageError } = await supabase.from("wiki_pages").insert({
       title,
       slug,
+      category: category.id,
       current_version: edit.id,
     });
 
@@ -60,6 +62,14 @@ export default function WikiDashboard() {
         placeholder="Page Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        className="w-full mb-4 p-2 border rounded"
+      />
+
+      <input
+        type="text"
+        placeholder="Category"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
         className="w-full mb-4 p-2 border rounded"
       />
 
