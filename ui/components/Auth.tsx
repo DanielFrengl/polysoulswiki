@@ -6,6 +6,7 @@ import { FaUser } from "react-icons/fa";
 import Dropdown from "./Dropdown";
 import { AuthProvider } from "@/context/AuthContext";
 import { CiLocationArrow1 } from "react-icons/ci";
+import { DropDownNav } from "@/components/DropDownNav";
 
 export default function AuthPopup() {
   const { user, loading } = useAuth();
@@ -16,7 +17,7 @@ export default function AuthPopup() {
   return (
     <>
       {user ? (
-        <Dropdown />
+        <DropDownNav />
       ) : (
         <div className="flex flex-row items-center">
           <a
