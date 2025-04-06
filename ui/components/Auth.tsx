@@ -21,11 +21,10 @@ export default function AuthPopup() {
         <div className="flex flex-row items-center">
           <a
             href="/login"
-            className="p-2 rounded-md uppercase text-semibold font-rubik text-white"
+            className="px-5 py-3 bg-emerald-800 rounded-md font-semibold font-rubik text-white"
           >
             Login
           </a>
-          <CiLocationArrow1 />
         </div>
       )}
     </>

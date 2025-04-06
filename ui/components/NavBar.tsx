@@ -11,7 +11,7 @@ const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="bg-black/50 w-full px-4 sm:px-6 lg:px-8 py-8 shadow-lg text-white relative">
+    <div className="bg-black w-full px-4 sm:px-6 lg:px-8 py-8 shadow-lg text-white relative">
       {/* Increased max-width slightly for more space if needed, optional */}
       <div className="max-w-screen-xl xl:max-w-screen-2xl mx-auto flex items-center justify-between flex-wrap">
         {/* --- Logo Section (Mobile/Medium) --- */}
@@ -100,11 +100,7 @@ const NavBar = () => {
               </a>
             </div>
           </div>
-
-          {/* Right Side Group (Search + User Icon) */}
-          {/* Added lg:flex-shrink-0 to prevent this group from shrinking */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-y-4 lg:gap-y-0 lg:gap-x-4 xl:gap-x-6 mt-4 lg:mt-0 lg:flex-shrink-0">
-            {/* Search Bar */}
             <div>
               {" "}
               {/* Ensure WikiSearch itself doesn't prevent shrinking if it has internal fixed widths */}

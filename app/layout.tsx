@@ -31,11 +31,11 @@ export default function RootLayout({
       >
         <div className="relative h-screen bg-[url(/background/backgroundpoly.png)] bg-cover bg-center">
           {/* Blur Overlay */}
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm z-0" />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-0" />
           <AuthProvider>
             <div className="relative z-10 flex flex-col items-center justify-center">
               <NavBar />
-              {children}
+              <div className="">{children}</div>
             </div>
           </AuthProvider>
         </div>
