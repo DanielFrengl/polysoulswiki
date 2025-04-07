@@ -333,8 +333,8 @@ export function UserProfileForm() {
                 placeholder="Your email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled="true" // Disable if email is not editable
                 autoComplete="email"
+                disabled
               />
               {/* Optional: Add a note if email change triggers confirmation */}
               {email !== currentUser?.email && (

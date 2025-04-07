@@ -6,6 +6,8 @@ import WikiSearch from "./SearchBar";
 import { FaUser } from "react-icons/fa";
 import { HiMenu, HiX } from "react-icons/hi";
 import AuthPopup from "./Auth";
+import Logo from "@/public/logo/logo.png";
+import Image from "next/image";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,13 +18,7 @@ const NavBar = () => {
       <div className="max-w-screen-xl xl:max-w-screen-2xl mx-auto flex items-center justify-between flex-wrap">
         {/* --- Logo Section (Mobile/Medium) --- */}
         <div className="flex-shrink-0 lg:hidden">
-          <a href="/">
-            <img
-              src="logo/logo.png"
-              className="w-32 md:w-48 h-auto"
-              alt="Logo"
-            />
-          </a>
+          <a href="/"></a>
         </div>
 
         {/* --- Mobile Menu Button --- */}
@@ -49,13 +45,7 @@ const NavBar = () => {
           <div className="flex flex-col lg:flex-row lg:items-center gap-y-3 lg:gap-y-0 lg:gap-x-6 xl:gap-x-8 lg:min-w-0">
             {/* Inline Logo (Large Screens) */}
             <div className="hidden lg:flex lg:items-center flex-shrink-0 mr-6">
-              <a href="/">
-                <img
-                  src="logo/logo.png"
-                  className="w-48 xl:w-56 h-auto"
-                  alt="Logo"
-                />
-              </a>
+              <a href="/"></a>
             </div>
 
             {/* Links Container */}
