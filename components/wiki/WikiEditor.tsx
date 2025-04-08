@@ -48,8 +48,7 @@ const WikiEditor = ({ initialContent, onSave }: WikiEditorProps) => {
           "wordcount",
           "emoticons",
           "codesample",
-          "textcolor",
-          "formatpainter",
+          "directionality",
         ],
         toolbar:
           "undo redo | formatselect fontselect fontsizeselect | " +

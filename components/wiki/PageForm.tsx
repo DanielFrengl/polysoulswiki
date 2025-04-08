@@ -5,13 +5,23 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import WikiEditor from "./WikiEditor";
 
-export default function PageForm({
-  onSubmit,
-  initialData,
-}: {
+type PageFormProps = {
+  initialData?: {
+    title: string;
+    slug: string;
+    content: string;
+  };
   onSubmit: (data: { title: string; slug: string; content: string }) => void;
-  initialData?: { title: string; slug: string; content: string };
-}) {
+  onChange: (field: "title" | "slug" | "content", value: string) => void;
+  children: React.ReactNode;
+};
+
+export default function PageForm({
+  initialData,
+  onSubmit,
+  onChange,
+  children,
+}: PageFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [content, setContent] = useState(initialData?.content || "");

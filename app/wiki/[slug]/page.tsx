@@ -18,7 +18,7 @@ export default async function WikiPage({
 }: {
   params: { slug: string };
 }) {
-  const { slug } = params; // Simply destructure slug directly from params
+  const { slug } = await params; // Simply destructure slug directly from params
 
   // Now, we can query the data from Supabase using the destructured slug
   const { data: page, error } = await supabase

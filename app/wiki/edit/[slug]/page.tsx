@@ -48,6 +48,8 @@ export default function WikiEditorPage() {
       })
       .eq("slug", initialData.slug);
 
+    console.log(initialData);
+
     setIsSaving(false);
 
     if (!error) {
@@ -82,7 +84,7 @@ export default function WikiEditorPage() {
               <h3 className="text-lg font-semibold mb-2">Content</h3>
               <WikiEditor
                 initialContent={initialData.content}
-                onChange={(content) => handleFieldChange("content", content)}
+                onSave={(content) => handleFieldChange("content", content)}
               />
             </div>
           </PageForm>
