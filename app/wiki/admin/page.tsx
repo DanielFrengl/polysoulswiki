@@ -5,7 +5,7 @@ import Link from "next/link";
 export default async function WikiAdminPage() {
   const { data: pages } = await supabase
     .from("wiki_pages")
-    .select("id, title, slug, updated_at")
+    .select("id, title, slug, created_at")
     .order("updated_at", { ascending: false });
 
   return (
@@ -20,7 +20,7 @@ export default async function WikiAdminPage() {
             <div>
               <h2 className="text-lg font-medium">{page.title}</h2>
               <p className="text-sm text-muted-foreground">
-                Last updated: {new Date(page.updated_at).toLocaleString()}
+                Last updated: {new Date(page.created_at).toLocaleString()}
               </p>
             </div>
             <div className="flex gap-2">

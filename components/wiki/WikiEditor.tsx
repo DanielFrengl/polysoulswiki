@@ -1,34 +1,68 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Editor } from "@tinymce/tinymce-react";
+import { useEffect, useState } from "react";
 
-export default function WikiEditor({
-  initialContent,
-  onSave,
-}: {
-  initialContent?: string;
+interface WikiEditorProps {
+  initialContent: string;
   onSave: (content: string) => void;
-}) {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: initialContent || "",
-  });
+}
+
+const WikiEditor = ({ initialContent, onSave }: WikiEditorProps) => {
+  const [editorContent, setEditorContent] = useState(initialContent);
+
+  useEffect(() => {
+    setEditorContent(initialContent);
+  }, [initialContent]);
+
+  const handleEditorChange = (content: string) => {
+    setEditorContent(content);
+    onSave(content); // Update the parent state
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="border rounded-lg p-2">
-        <EditorContent editor={editor} />
-      </div>
-      <Button
-        onClick={() => {
-          if (editor) onSave(editor.getHTML());
-        }}
-      >
-        Save
-      </Button>
-    </div>
+    <Editor
+      apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+      initialValue={editorContent}
+      init={{
+        height: 600,
+        menubar: true,
+        plugins: [
+          "advlist",
+          "autolink",
+          "lists",
+          "link",
+          "image",
+          "charmap",
+          "preview",
+          "anchor",
+          "searchreplace",
+          "visualblocks",
+          "code",
+          "fullscreen",
+          "insertdatetime",
+          "media",
+          "table",
+          "code",
+          "help",
+          "wordcount",
+          "emoticons",
+          "codesample",
+          "textcolor",
+          "formatpainter",
+        ],
+        toolbar:
+          "undo redo | formatselect fontselect fontsizeselect | " +
+          "bold italic underline strikethrough forecolor backcolor | " +
+          "alignleft aligncenter alignright alignjustify | " +
+          "bullist numlist outdent indent | link image media codesample emoticons | " +
+          "table | formatpainter removeformat | searchreplace preview fullscreen | help",
+        content_style:
+          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+      }}
+      onEditorChange={(_, editor) => handleEditorChange(editor.getContent())}
+    />
   );
-}
+};
+
+export default WikiEditor;

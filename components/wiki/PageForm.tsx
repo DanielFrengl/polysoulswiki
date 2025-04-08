@@ -24,24 +24,26 @@ export default function PageForm({
         onSubmit({ title, slug, content });
       }}
     >
-      <div>
-        <Label>Title</Label>
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="">
+          <Label className="mb-2">Title</Label>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <Label className="mb-2">Slug</Label>
+          <Input
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            disabled
+          />
+        </div>
       </div>
       <div>
-        <Label>Slug</Label>
-        <Input
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <Label>Content</Label>
+        <Label className="py-5">Content</Label>
         <WikiEditor
           initialContent={content}
           onSave={(html) => setContent(html)}

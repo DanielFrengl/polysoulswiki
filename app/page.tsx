@@ -1,7 +1,5 @@
-import Content from "@/ui/components/Content";
-import NavBar from "@/ui/components/NavBar";
-import { FaUser } from "react-icons/fa";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <div></div>;
+  redirect("/wiki/home");
 }
