@@ -2,17 +2,19 @@
 
 import { LoginForm } from "@/components/login-form";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { supabase } from "../utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   useEffect(() => {
     async function checkUserLoggedIn() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        window.location.href = "/";
+        router.push("/");
       }
     }
     checkUserLoggedIn();

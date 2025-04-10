@@ -13,7 +13,6 @@ import { Label } from "./ui/label";
 import { handleSignout } from "@/app/utils/supabase/logout";
 import { LogOut } from "lucide-react";
 import { Menubar, MenubarMenu, MenubarTrigger } from "./ui/menubar";
-import TinyMCEEditor from "@/ui/components/TinyMCEEditor";
 
 const Dashboard = () => {
   const [activeEditor, setActiveEditor] = useState<"page" | "category" | null>(
@@ -58,7 +57,7 @@ const Dashboard = () => {
           <div className="space-y-4 mt-4">
             <Label htmlFor="page-name">Page Name</Label>
             <Input id="page-name" placeholder="Enter page name" />
-            <TinyMCEEditor initialValue="" onChange={content} />
+            <WikiEditor />
             <Button variant="outline" onClick={() => setActiveEditor(null)}>
               Create Page
             </Button>

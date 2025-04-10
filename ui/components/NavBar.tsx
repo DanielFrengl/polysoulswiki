@@ -18,7 +18,14 @@ const NavBar = () => {
       <div className="max-w-screen-xl xl:max-w-screen-2xl mx-auto flex items-center justify-between flex-wrap">
         {/* --- Logo Section (Mobile/Medium) --- */}
         <div className="flex-shrink-0 lg:hidden">
-          <a href="/"></a>
+          <a href="/wiki/home">
+            <Image
+              src={Logo.src}
+              alt="PolySouls Wiki"
+              width={100}
+              height={50}
+            />
+          </a>
         </div>
 
         {/* --- Mobile Menu Button --- */}
@@ -90,13 +97,12 @@ const NavBar = () => {
               </a>
             </div>
           </div>
-          <div className="flex flex-col lg:flex-row lg:items-center gap-y-4 lg:gap-y-0 lg:gap-x-4 xl:gap-x-6 mt-4 lg:mt-0 lg:flex-shrink-0">
-            <div>
+          <div className="flex flex-col lg:flex-row lg:items-center gap-y-4 lg:gap-y-0 lg:gap-x-4 xl:gap-x-6">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-y-4 lg:gap-y-0 lg:gap-x-4 xl:gap-x-6 mt-4 lg:mt-0 lg:flex-shrink-0">
               {" "}
               {/* Ensure WikiSearch itself doesn't prevent shrinking if it has internal fixed widths */}
               <WikiSearch />
             </div>
-            {/* User Icon */}
             <AuthPopup />
           </div>
         </nav>

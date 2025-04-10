@@ -17,7 +17,6 @@ export async function slugify(text: string) {
     .replace(/-+$/, ""); // Trim - from end of text
 }
 
-
 export function formatDateTime(dateString: string) {
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",

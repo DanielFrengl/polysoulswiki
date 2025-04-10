@@ -23,7 +23,7 @@ const WikiEditor = ({ initialContent, onSave }: WikiEditorProps) => {
   return (
     <Editor
       apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
-      initialValue={editorContent}
+      value={editorContent}
       init={{
         height: 600,
         menubar: true,

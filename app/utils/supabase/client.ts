@@ -1,4 +1,8 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { redirect } from "next/navigation";
+
+
+
 
 export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,6 +19,6 @@ export const supabase = createBrowserClient(
 export async function checkUserLoggedIn() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-      window.location.href = "/login";
+      redirect("/login");
   }
 }

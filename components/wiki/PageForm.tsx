@@ -2,8 +2,9 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import WikiEditor from "./WikiEditor";
+import { slugify } from "@/lib/utils";
 
 type PageFormProps = {
   initialData?: {
@@ -13,18 +14,33 @@ type PageFormProps = {
   };
   onSubmit: (data: { title: string; slug: string; content: string }) => void;
   onChange: (field: "title" | "slug" | "content", value: string) => void;
-  children: React.ReactNode;
 };
 
 export default function PageForm({
   initialData,
   onSubmit,
   onChange,
-  children,
 }: PageFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [content, setContent] = useState(initialData?.content || "");
+
+  // Update title and also update slug when title changes
+  useEffect(() => {
+    const change = async () => {
+      onChange("title", title);
+
+      const newSlug = await slugify(title);
+      setSlug(newSlug);
+      onChange("slug", newSlug);
+    };
+
+    change();
+  }, [title]); // Only depend on `title` since the slug is generated from it
+
+  useEffect(() => {
+    onChange("content", content);
+  }, [content]);
 
   return (
     <form
@@ -35,7 +51,7 @@ export default function PageForm({
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="">
+        <div>
           <Label className="mb-2">Title</Label>
           <Input
             value={title}
@@ -44,7 +60,7 @@ export default function PageForm({
           />
         </div>
         <div>
-          <Label className="mb-2">Slug</Label>
+          <Label className="mb-2">URL / Slug</Label>
           <Input
             value={slug}
             onChange={(e) => setSlug(e.target.value)}

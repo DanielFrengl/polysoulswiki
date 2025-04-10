@@ -1,4 +1,4 @@
-import { supabase } from "@/app/utils/supabase/client";
+import { checkUserLoggedIn, supabase } from "@/app/utils/supabase/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,6 +19,11 @@ export default async function WikiPage({
   params: { slug: string };
 }) {
   const { slug } = await params; // Simply destructure slug directly from params
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  console.log("Current user:", user);
 
   // Now, we can query the data from Supabase using the destructured slug
   const { data: page, error } = await supabase
@@ -55,14 +60,17 @@ export default async function WikiPage({
             <p>Content not available</p>
           )}
         </CardContent>
-        <CardFooter>
-          <Link
-            href={`/wiki/edit/${page.slug}`}
-            className="text-sm text-blue-500 hover:underline block mt-6"
-          >
-            Edit this page
-          </Link>
-        </CardFooter>
+
+        {user && (
+          <CardFooter>
+            <Link
+              href={`/wiki/edit/${page.slug}`}
+              className="text-sm text-blue-500 hover:underline block mt-6"
+            >
+              Edit this page
+            </Link>
+          </CardFooter>
+        )}
       </Card>
     </div>
   );
