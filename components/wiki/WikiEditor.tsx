@@ -25,8 +25,15 @@ const WikiEditor = ({ initialContent, onSave }: WikiEditorProps) => {
       apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
       value={editorContent}
       init={{
+        content_css: "default",
         height: 600,
         menubar: true,
+        newline_behavior: "linebreak",
+        paste_as_text: false, // allow rich text pasting
+        paste_retain_style_properties: "all",
+        paste_merge_formats: false,
+        paste_webkit_styles: "all",
+        paste_data_images: true, // allow pasting inline images if needed
         plugins: [
           "advlist",
           "autolink",
@@ -49,6 +56,7 @@ const WikiEditor = ({ initialContent, onSave }: WikiEditorProps) => {
           "emoticons",
           "codesample",
           "directionality",
+          "paste",
         ],
         toolbar:
           "undo redo | formatselect fontselect fontsizeselect | " +
@@ -56,8 +64,6 @@ const WikiEditor = ({ initialContent, onSave }: WikiEditorProps) => {
           "alignleft aligncenter alignright alignjustify | " +
           "bullist numlist outdent indent | link image media codesample emoticons | " +
           "table | formatpainter removeformat | searchreplace preview fullscreen | help",
-        content_style:
-          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
       }}
       onEditorChange={(_, editor) => handleEditorChange(editor.getContent())}
     />

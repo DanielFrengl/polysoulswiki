@@ -3,7 +3,7 @@
 import { LoginForm } from "@/components/login-form";
 import { useTheme } from "next-themes";
 import { use, useEffect, useState } from "react";
-import { supabase } from "../utils/supabase/client";
+import { createClient } from "../../utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -12,7 +12,7 @@ export default function LoginPage() {
     async function checkUserLoggedIn() {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await createClient.auth.getUser();
       if (user) {
         router.push("/");
       }

@@ -1,5 +1,5 @@
     import { useState } from "react";
-    import { checkUserLoggedIn, supabase } from "../utils/supabase/client";
+    import { checkUserLoggedIn, supabase } from "../../utils/supabase/client";
     import { toast } from "sonner";
 
 

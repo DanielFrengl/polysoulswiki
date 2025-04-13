@@ -13,6 +13,7 @@ import { Label } from "./ui/label";
 import { handleSignout } from "@/app/utils/supabase/logout";
 import { LogOut } from "lucide-react";
 import { Menubar, MenubarMenu, MenubarTrigger } from "./ui/menubar";
+import WikiEditor from "./wiki/WikiEditor";
 
 const Dashboard = () => {
   const [activeEditor, setActiveEditor] = useState<"page" | "category" | null>(
@@ -44,6 +45,9 @@ const Dashboard = () => {
       <CardContent>
         <Menubar>
           <MenubarMenu>
+            <MenubarTrigger onClick={() => setActiveEditor(null)}>
+              Admin
+            </MenubarTrigger>
             <MenubarTrigger onClick={() => setActiveEditor("page")}>
               Create a Page
             </MenubarTrigger>
@@ -52,12 +56,13 @@ const Dashboard = () => {
             </MenubarTrigger>
           </MenubarMenu>
         </Menubar>
+        {activeEditor === null && <div className="space-y-4 mt-4"></div>}
 
         {activeEditor === "page" && (
           <div className="space-y-4 mt-4">
             <Label htmlFor="page-name">Page Name</Label>
             <Input id="page-name" placeholder="Enter page name" />
-            <WikiEditor />
+            <WikiEditor initialContent="" onSave={content} />
             <Button variant="outline" onClick={() => setActiveEditor(null)}>
               Create Page
             </Button>

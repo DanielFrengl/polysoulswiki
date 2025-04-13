@@ -1,9 +1,9 @@
-    import { supabase } from "./client";
+    import { createClient } from "../../../utils/supabase/client";
 
 
     export const handleSignout = async () => {
         try {
-          const { error } = await supabase.auth.signOut();
+          const { error } = await createClient.auth.signOut();
           if (error) throw error;
       
           console.log("Signed out successfully!");

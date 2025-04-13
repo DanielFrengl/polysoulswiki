@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/app/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 // Type for Auth Context
 interface AuthContextType {
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Check if the user is logged in
     const checkUser = async () => {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await createClient.auth.getSession();
       setUser(data.session?.user || null);
       setLoading(false);
     };
@@ -27,9 +27,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkUser();
 
     // Listen for auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user || null);
-    });
+    const { data: listener } = createClient.auth.onAuthStateChange(
+      (_, session) => {
+        setUser(session?.user || null);
+      }
+    );
 
     return () => {
       listener.subscription.unsubscribe();

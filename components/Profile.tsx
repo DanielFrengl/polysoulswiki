@@ -17,11 +17,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 // Assuming your Supabase client setup is compatible with App Router client components
-import { supabase } from "@/app/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { handleSignout } from "@/app/utils/supabase/logout";
 import { LogOut } from "lucide-react";
+import { create } from "domain";
 
 // Removed the top-level checkUserLoggedIn() call - it should run inside useEffect or be handled by middleware/page
 
@@ -52,7 +53,7 @@ export function UserProfileForm() {
       const {
         data: { user },
         error: authError,
-      } = await supabase.auth.getUser();
+      } = await createClient.auth.getUser();
 
       if (authError || !user) {
         console.error("Auth Error or No User:", authError);
@@ -70,7 +71,7 @@ export function UserProfileForm() {
 
         // Fetch profile data from 'profiles' table
         console.log("Attempting to fetch profile for user ID:", user.id); // Add this line
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profileData, error: profileError } = await createClient
           .from("profiles")
           .select("name, username")
           .eq("user_id", user.id)
@@ -138,7 +139,7 @@ export function UserProfileForm() {
       }
 
       if (Object.keys(authUpdates).length > 0) {
-        const { error } = await supabase.auth.updateUser(authUpdates);
+        const { error } = await createClient.auth.updateUser(authUpdates);
         if (error) {
           authUpdateError = error;
           console.error("Auth update error:", error);
@@ -164,14 +165,14 @@ export function UserProfileForm() {
           // Refresh current user state after successful auth update
           const {
             data: { user: updatedUser },
-          } = await supabase.auth.getUser();
+          } = await createClient.auth.getUser();
           if (updatedUser) setCurrentUser(updatedUser);
         }
       }
 
       // --- Update 'profiles' Table (Name/Username) ---
       // Fetch current profile state just before updating to compare
-      const { data: currentProfile } = await supabase
+      const { data: currentProfile } = await createClient
         .from("profiles")
         .select("name, username")
         .eq("user_id", currentUser.id)
@@ -192,11 +193,11 @@ export function UserProfileForm() {
       if (Object.keys(profileUpdates).length > 0 && !authUpdateError) {
         // Upsert logic: If profile doesn't exist (currentProfile is null), insert; otherwise, update.
         const query = currentProfile
-          ? supabase
+          ? createClient
               .from("profiles")
               .update(profileUpdates)
               .eq("user_id", currentUser.id)
-          : supabase
+          : createClient
               .from("profiles")
               .insert({ user_id: currentUser.id, ...profileUpdates });
 

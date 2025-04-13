@@ -1,4 +1,4 @@
-import { supabase } from "@/app/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 export async function registerWithEmail(
   email: string,
@@ -7,7 +7,7 @@ export async function registerWithEmail(
   name?: string
 ) {
   // 1. Sign up the user
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  const { data: signUpData, error: signUpError } = await createClient.auth.signUp({
     email,
     password,
   });
@@ -22,8 +22,7 @@ export async function registerWithEmail(
     throw new Error("User ID not returned from signup.");
   }
 
-  // 2. Create profile
-  const { error: profileError } = await supabase.from("profiles").insert([
+  const { error: profileError } = await createClient.from("profiles").insert([
     {
       user_id: userId,
       username,

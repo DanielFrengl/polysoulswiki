@@ -1,9 +1,9 @@
-// app/wiki/admin/page.tsx
-import { supabase } from "@/app/utils/supabase/client";
+"use client";
+import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
 export default async function WikiAdminPage() {
-  const { data: pages } = await supabase
+  const { data: pages } = await createClient
     .from("wiki_pages")
     .select("id, title, slug, created_at")
     .order("updated_at", { ascending: false });

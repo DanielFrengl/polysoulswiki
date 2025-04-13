@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/app/utils/supabase/client"; // Adjust path if needed
+import { createClient } from "@/utils/supabase/client"; // Adjust path if needed
 import PageForm from "@/components/wiki/PageForm"; // Adjust path if needed
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -41,7 +41,7 @@ export default function WikiEditPage() {
     }
     setIsLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await createClient
         .from("wiki_pages")
         .select("title, slug, content")
         .eq("slug", originalSlug)
@@ -87,7 +87,7 @@ export default function WikiEditPage() {
         `>>> handleFieldChange: Setting new state based on previous:`,
         newState
       );
-      return newState; // Return the new state object
+      return newState; // Return the new state object ses negr ty debile
     });
   };
 
@@ -97,12 +97,6 @@ export default function WikiEditPage() {
     if (!initialData || !originalSlug) {
       // Check initialData
       toast.error("Cannot save, data is missing.");
-      console.error(
-        ">>> handleSave: Aborting save. initialData:",
-        initialData,
-        "originalSlug:",
-        originalSlug
-      ); // Log initialData
       return;
     }
 
@@ -111,7 +105,7 @@ export default function WikiEditPage() {
     // Log the data being sent
     const dataToUpdate = {
       title: initialData.title, // Use initialData.title
-      content: initialData.content, // Use initialData.content
+      content: initialData.content, // Use initialData.content nebudeš me srát ty zmrde
       slug: initialData.slug, // Use initialData.slug
       updated_at: new Date().toISOString(),
     };
@@ -124,7 +118,7 @@ export default function WikiEditPage() {
       originalSlug
     );
 
-    const { error } = await supabase
+    const { error } = await createClient
       .from("wiki_pages")
       .update(dataToUpdate) // Send the data object
       .eq("slug", originalSlug); // Find the record using the ORIGINAL slug
