@@ -14,11 +14,26 @@ import { handleSignout } from "@/app/utils/supabase/logout";
 import { LogOut } from "lucide-react";
 import { Menubar, MenubarMenu, MenubarTrigger } from "./ui/menubar";
 import WikiEditor from "./wiki/WikiEditor";
+import { useRouter } from "next/navigation";
+import { createPage } from "@/app/wiki/action";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const [activeEditor, setActiveEditor] = useState<"page" | "category" | null>(
     null
   );
+
+  const router = useRouter();
+
+  const handleCreate = () => {
+    try {
+      createPage("title", "slug", "content");
+      router.push("/wiki" + `/${"slug"}`);
+    } catch (error) {
+      console.error("Error creating page:", error);
+      toast.error("Error creating page: " + error);
+    }
+  };
 
   const content = (content: string) => {
     console.log(content);
@@ -59,14 +74,7 @@ const Dashboard = () => {
         {activeEditor === null && <div className="space-y-4 mt-4"></div>}
 
         {activeEditor === "page" && (
-          <div className="space-y-4 mt-4">
-            <Label htmlFor="page-name">Page Name</Label>
-            <Input id="page-name" placeholder="Enter page name" />
-            <WikiEditor initialContent="" onSave={content} />
-            <Button variant="outline" onClick={() => setActiveEditor(null)}>
-              Create Page
-            </Button>
-          </div>
+          
         )}
         {activeEditor === "category" && (
           <div className="space-y-4 mt-4">

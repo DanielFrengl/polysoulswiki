@@ -26,7 +26,7 @@ const WikiEditor = ({ initialContent, onSave }: WikiEditorProps) => {
       value={editorContent}
       init={{
         content_css: "default",
-        height: 600,
+        height: 500,
         menubar: true,
         newline_behavior: "linebreak",
         paste_as_text: false, // allow rich text pasting

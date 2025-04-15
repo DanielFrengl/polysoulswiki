@@ -1,3 +1,5 @@
+"use client";
+import { useRouter } from "next/navigation";
 import {
   Cloud,
   CreditCard,
@@ -10,6 +12,7 @@ import {
   Plus,
   PlusCircle,
   Settings,
+  SettingsIcon,
   User,
   UserPlus,
   Users,
@@ -34,6 +37,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { handleSignout } from "@/app/utils/supabase/logout";
 
 export function DropDownNav() {
+  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -44,14 +48,14 @@ export function DropDownNav() {
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => (window.location.href = "/profile")}>
+        <DropdownMenuItem onClick={() => router.push("/profile")}>
           <User />
           <span>Profile</span>
           <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Github />
-          <span>GitHub</span>
+        <DropdownMenuItem onClick={() => router.push("/wiki/dashboard")}>
+          <SettingsIcon />
+          <span>Dashboard</span>
         </DropdownMenuItem>
         <DropdownMenuItem>
           <LifeBuoy />

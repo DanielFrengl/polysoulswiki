@@ -14,29 +14,57 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { handleSignout } from "@/app/utils/supabase/logout";
 import { LogOut } from "lucide-react";
-
+import { useRouter } from "next/navigation";
+import { createPage } from "@/app/wiki/action";
+import { toast } from "sonner";
 import WikiAdminPage from "../admin/page";
 import PageForm from "@/components/wiki/PageForm";
+import CategoryForm from "@/components/wiki/CategoryForm";
 
 const WikiDashboard = () => {
   const [activeEditor, setActiveEditor] = useState<"page" | "category" | null>(
     null
   );
+
+  const router = useRouter();
+
   const handleTabClick = (tab: "page" | "category" | null) => {
-    // Optionally reset forms when switching *to* a creation tab
     if (tab === "page") {
-      // Decide if you want to reset every time the tab is clicked,
-      // or only after successful submission (handled in submit function)
-      // resetPageForm(); // Uncomment if you want reset on tab click
     }
     if (tab === "category") {
-      // setCategoryName(''); // Uncomment if you want reset on tab click
     }
     setActiveEditor(tab);
   };
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const handleCreatePage = () => {
+    try {
+      createPage(initialData.title, initialData.slug, initialData.content);
+      toast.success("Page created successfully");
+      router.push(`/wiki/${initialData.slug}`);
+    } catch (error) {
+      console.error("Error creating page:", error);
+      toast.error("Error creating page: " + error);
+    }
+  };
+
+  const handleCreateCategory = () => {
+    try {
+      createPage(
+        initialDataCategory.name,
+        initialDataCategory.description,
+        initialDataCategory.slug,
+        initialDataCategory.hasPages
+      );
+      toast.success("Page created successfully");
+      router.push(`/wiki/${initialData.slug}`);
+    } catch (error) {
+      console.error("Error creating page:", error);
+      toast.error("Error creating page: " + error);
+    }
+  };
 
   const [initialData, setInitialData] = useState<{
     title: string;
@@ -46,6 +74,18 @@ const WikiDashboard = () => {
     title: "",
     slug: "",
     content: "",
+  });
+
+  const [initialDataCategory, setInitialDataCategory] = useState<{
+    name: string;
+    description: string;
+    slug: string;
+    hasPages: string[];
+  }>({
+    name: "",
+    description: "",
+    slug: "",
+    hasPages: [],
   });
 
   const handleFieldChange = (
@@ -110,17 +150,21 @@ const WikiDashboard = () => {
             <PageForm
               initialData={initialData}
               onChange={handleFieldChange}
-              onSubmit={() => {
-                // Add your submit logic here
-              }}
+              onSubmit={() => {}}
             />
+            <Button variant="default" onClick={handleCreate}>
+              Create a page
+            </Button>
           </div>
         )}
 
         {activeEditor === "category" && (
           <div className="space-y-4 mt-4">
-            <Label htmlFor="category-name">Category Name</Label>
-            <Input id="category-name" placeholder="Enter category name" />
+            <CategoryForm
+              initialData={initialData}
+              onChange={handleFieldChange}
+              onSubmit={() => {}}
+            />
             <Button variant="outline" onClick={() => setActiveEditor(null)}>
               Create Category
             </Button>

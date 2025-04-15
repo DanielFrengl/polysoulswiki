@@ -1,12 +1,26 @@
 "use client";
-import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
+import { fetchPages } from "../action";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
-export default async function WikiAdminPage() {
-  const { data: pages } = await createClient
-    .from("wiki_pages")
-    .select("id, title, slug, created_at")
-    .order("updated_at", { ascending: false });
+interface WikiPage {
+  id: string;
+  title: string;
+  slug: string;
+  created_at: string;
+}
+
+export default function WikiAdminPage() {
+  const [pages, setPages] = useState<WikiPage[]>([]);
+
+  useEffect(() => {
+    const loadPages = async () => {
+      const data = await fetchPages();
+      setPages(data);
+    };
+    loadPages();
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto py-10">
@@ -24,17 +38,11 @@ export default async function WikiAdminPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Link
-                href={`/wiki/${page.slug}`}
-                className="text-blue-500 hover:underline text-sm"
-              >
-                View
+              <Link href={`/wiki/${page.slug}`}>
+                <Button variant="outline">View</Button>
               </Link>
-              <Link
-                href={`/wiki/edit/${page.slug}`}
-                className="text-orange-500 hover:underline text-sm"
-              >
-                Edit
+              <Link href={`/wiki/edit/${page.slug}`}>
+                <Button variant="default">Edit</Button>
               </Link>
             </div>
           </div>
