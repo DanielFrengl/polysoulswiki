@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { slugify } from "@/lib/utils";
+import WikiPageSearch from "@/app/wiki/dashboard/PageSearch";
+import { fetchPageIdsFromSlugs } from "@/app/wiki/action";
 
 type CategoryFormProps = {
   initialData?: {
@@ -24,7 +26,7 @@ type CategoryFormProps = {
   ) => void;
 };
 
-export default function PageForm({
+export default function CategoryPageForm({
   initialData,
   onSubmit,
   onChange,
@@ -56,9 +58,9 @@ export default function PageForm({
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        onSubmit({ name, slug, description, hasPages });
+        onSubmit({ name, slug, description, hasPages }); // send IDs to backend
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -80,7 +82,7 @@ export default function PageForm({
         </div>
       </div>
       <div>
-        <Label className="py-5">Content</Label>
+        <Label className="py-5">Description</Label>
         <Input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -89,13 +91,36 @@ export default function PageForm({
       </div>
       <div>
         <Label className="py-5">Pages</Label>
-        <Input
-          value={hasPages.join(", ")}
-          onChange={(e) =>
-            setHasPages(e.target.value.split(",").map((page) => page.trim()))
-          }
-          placeholder="Enter page slugs separated by commas"
+        <WikiPageSearch
+          onSelect={(page) => {
+            if (!hasPages.includes(page.slug)) {
+              const updated = [...hasPages, page.slug];
+              setHasPages(updated);
+              onChange("hasPages", updated);
+            }
+          }}
         />
+        <ul className="my-2 space-y-1 text-sm">
+          {hasPages.map((slug) => (
+            <li
+              key={slug}
+              className="border rounded p-2 flex justify-between items-center"
+            >
+              {slug}
+              <button
+                type="button"
+                className="text-red-500 hover:underline text-xs"
+                onClick={() => {
+                  const updated = hasPages.filter((s) => s !== slug);
+                  setHasPages(updated);
+                  onChange("hasPages", updated);
+                }}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     </form>
   );

@@ -52,7 +52,14 @@ const NavBar = () => {
           <div className="flex flex-col lg:flex-row lg:items-center gap-y-3 lg:gap-y-0 lg:gap-x-6 xl:gap-x-8 lg:min-w-0">
             {/* Inline Logo (Large Screens) */}
             <div className="hidden lg:flex lg:items-center flex-shrink-0 mr-6">
-              <a href="/"></a>
+              <a href="/">
+                <Image
+                  src={Logo.src}
+                  alt="PolySouls Wiki"
+                  width={200}
+                  height={100}
+                />
+              </a>
             </div>
 
             {/* Links Container */}

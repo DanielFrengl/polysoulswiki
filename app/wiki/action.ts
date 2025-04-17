@@ -92,35 +92,93 @@ export async function fetchPagesByTitle(title: string) {
 
   return data;
 }
-// CATEGORY
 
-export async function createCategory(
-  name: string,
-  slug: string,
-  description: string,
-  hasPages: string[]
-): Promise<void> {
-  const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("wiki_categories")
-    .insert({ name, slug, description});
+  export async function fetchPageIdsFromSlugs(slugs: string[]): Promise<string[]> {
+    if (slugs.length === 0) return [];
 
-  const { error: error2 } = await supabase
-    .from("wiki_page_categories")
-    .insert(
-      hasPages.map((pageId) => ({
-        page_id: pageId,
-        category_id: slug,
-      }))
-    );
-  if (error2) {
-    console.error("Error creating page-category relationship:", error2);
-    throw error2;
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("wiki_pages")
+      .select("id, slug") 
+      .in("slug", slugs);
+
+    if (error) {  
+      console.error("Error fetching page IDs from slugs:", error.message);
+      return [];
+    }
+
+    return data.map((page) => page.id);
   }
 
-  if (error) {
-    console.error("Error creating category:", error);
-    throw error;
+
+
+  // CATEGORY --------------------------------------------------------------
+
+  export async function fetchCategoryBySlug(slug: string) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("wiki_categories")
+      .select("id")
+      .eq("slug", slug)
+      .single();
+    if (error) {
+      console.error("Error fetching category:", error);
+      throw error;
+    }
+    return data;
+
   }
-}
+
+  export async function updatePagesForCategory(
+    categoryId: string,
+    pageIds: string[]
+  ): Promise<void> {
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from("wiki_page_categories")
+      .upsert(
+        pageIds.map((pageId) => ({
+          page_id: pageId,
+          category_id: categoryId,
+        }))
+      );
+
+    if (error) {
+      console.error("Error updating pages for category:", error.message);
+      throw error;
+    }
+
+    console.log("Pages successfully linked to category.");
+  }
+
+  export async function createCategory(
+    name: string,
+    slug: string,
+    description: string,
+    hasPages: string[]
+  ): Promise<void> {
+    const supabase = await createClient();
+  
+    const { error } = await supabase
+      .from("wiki_categories")
+      .insert({ name, slug, description });
+  
+    if (error) {
+      console.error("Error creating category:", error.message);
+      throw error;
+    }
+  
+    // Fetch the newly created category by slug
+    const category = await fetchCategoryBySlug(slug);
+  
+    // ✅ Convert slugs to page IDs before linking
+    const pageIds = await fetchPageIdsFromSlugs(hasPages);
+  
+    // ✅ Now update the linking table
+    await updatePagesForCategory(category.id, pageIds);
+  
+    console.log("Category created and pages linked:", category.id);
+  }
+  
