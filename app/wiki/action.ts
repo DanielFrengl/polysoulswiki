@@ -112,8 +112,40 @@ export async function fetchPagesByTitle(title: string) {
   }
 
 
+  // CATEGORY - PAGE RELATION ----------------------------------------------
+
+  export async function fetchPagesInCategories(category_id: string) {
+    const supabase = await createClient();
+    const {data, error} = await supabase
+    .from("wiki_page_categories")
+    .select("page_id")
+    .eq("category_id", category_id)
+    
+    if (error) {
+      console.log("Error fetching pages in categories", error)
+    }
+
+    return data;
+  }
+
+
 
   // CATEGORY --------------------------------------------------------------
+
+  export async function fetchCategories() {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+  .from("wiki_categories")
+  .select("id, name, slug, description")
+  .order("name")
+
+  if (error) {
+    console.error("Error fetching category:", error);
+    throw error;
+  }
+
+  return data;
+}
 
   export async function fetchCategoryBySlug(slug: string) {
     const supabase = await createClient();
@@ -159,8 +191,10 @@ export async function fetchPagesByTitle(title: string) {
     description: string,
     hasPages: string[]
   ): Promise<void> {
+
+
+  console.log("Attempting to insert category with:", { name, slug, description }); // <-- ADD THIS LOG
     const supabase = await createClient();
-  
     const { error } = await supabase
       .from("wiki_categories")
       .insert({ name, slug, description });
@@ -169,7 +203,7 @@ export async function fetchPagesByTitle(title: string) {
       console.error("Error creating category:", error.message);
       throw error;
     }
-  
+    
     // Fetch the newly created category by slug
     const category = await fetchCategoryBySlug(slug);
   

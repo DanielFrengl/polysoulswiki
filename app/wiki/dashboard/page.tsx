@@ -50,19 +50,40 @@ const WikiDashboard = () => {
     }
   };
 
-  const handleCreateCategory = () => {
+  const handleCreateCategory = async () => {
+    // Basic client-side check
+    if (!initialDataCategory.name || !initialDataCategory.description) {
+      toast.error("Category Name and Description cannot be empty.");
+      return; // Stop execution
+    }
+    // ... rest of the function
+    setIsSaving(true); // Use loading state
     try {
-      createCategory(
+      await createCategory(
+        // Add await here
         initialDataCategory.name,
+        initialDataCategory.slug, // Ensure slug is generated even for empty name?
         initialDataCategory.description,
-        initialDataCategory.slug,
         initialDataCategory.hasPages
       );
-      toast.success("Category created successfully");
-      router.push(`/wiki/${initialDataCategory.slug}`);
-    } catch (error) {
+      toast.success(
+        "Category created successfully: " + initialDataCategory.name
+      );
+      // Reset form state here
+      setInitialDataCategory({
+        name: "",
+        description: "",
+        slug: "",
+        hasPages: [],
+      });
+    } catch (error: any) {
+      // Catch the error properly
       console.error("Error creating category:", error);
-      toast.error("Error creating category: " + error);
+      toast.error(
+        "Error creating category: " + (error.message || "Unknown error")
+      );
+    } finally {
+      setIsSaving(false); // Reset loading state
     }
   };
 
