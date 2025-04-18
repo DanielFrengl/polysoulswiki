@@ -31,7 +31,7 @@ export default function WikiPageSearch({
       } else {
         setResults([]);
       }
-    }, 300);
+    }, 100);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);
@@ -52,16 +52,17 @@ export default function WikiPageSearch({
   };
 
   return (
-    <Command className="max-w-md border rounded shadow bg-background relative z-50">
+    <Command className="rounded-lg border shadow-md max-w-xl">
       <CommandInput
         placeholder="Search wiki pages..."
         value={query}
         onValueChange={(val) => setQuery(val)}
       />
-      <CommandList>
+      <CommandList className="bg-black">
         {results.length > 0 ? (
           results.map((page) => (
             <CommandItem
+              className="bg-black"
               key={page.slug}
               value={page.title}
               onSelect={() => {
@@ -74,7 +75,7 @@ export default function WikiPageSearch({
             </CommandItem>
           ))
         ) : (
-          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandEmpty>No results.</CommandEmpty>
         )}
       </CommandList>
     </Command>

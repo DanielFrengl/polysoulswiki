@@ -114,19 +114,60 @@ export async function fetchPagesByTitle(title: string) {
 
   // CATEGORY - PAGE RELATION ----------------------------------------------
 
-  export async function fetchPagesInCategories(category_id: string) {
-    const supabase = await createClient();
-    const {data, error} = await supabase
-    .from("wiki_page_categories")
-    .select("page_id")
-    .eq("category_id", category_id)
-    
-    if (error) {
-      console.log("Error fetching pages in categories", error)
+  export async function fetchPagesInCategories(categoryId: string) {
+    // Basic input validation
+    if (!categoryId) {
+        console.error("fetchPagesInCategories Error: categoryId parameter is missing or invalid.");
+        return []; // Return empty array if no categoryId provided
     }
 
-    return data;
-  }
+    // Use the server client for server actions
+    const supabase = await createClient();
+
+    try {
+        // Step 1: Fetch the page_ids from the join table ('wiki_page_categories')
+        const { data: joinData, error: joinError } = await supabase
+            .from("wiki_page_categories") // Your join table name
+            .select("page_id")            // Select only the foreign key to the pages table
+            .eq("category_id", categoryId); // Filter by the provided category ID
+
+        if (joinError) {
+            console.error("Error fetching page IDs from wiki_page_categories:", joinError.message);
+            // Decide: return [] or throw new Error(...) depending on how you want to handle errors upstream
+            return [];
+        }
+
+        // If no page associations are found for this category, return an empty array
+        if (!joinData || joinData.length === 0) {
+            console.log(`No pages found associated with category ID: ${categoryId}`);
+            return [];
+        }
+
+        // Extract the page IDs into a simple array ['id1', 'id2', ...]
+        const pageIds = joinData.map(item => item.page_id);
+
+        // Step 2: Fetch the actual page details from the 'pages' table using the IDs found
+        // --- IMPORTANT: Replace 'pages' with the actual name of your wiki pages table ---
+        const { data: pagesData, error: pagesError } = await supabase
+            .from('wiki_pages') // <-- Replace 'pages' with your actual table name for wiki pages
+            .select('id, title, slug, created_at') // Select the columns matching the WikiPage interface
+            .in('id', pageIds) // Filter pages where the ID is in the list we gathered
+            .order('title', { ascending: true }); // Optional: Order the results
+
+        if (pagesError) {
+            console.error("Error fetching page details from pages table:", pagesError.message);
+            return [];
+        }
+
+        // Return the array of page objects, or an empty array if null/undefined
+        return pagesData || [];
+
+    } catch (error) {
+        // Catch unexpected errors (e.g., network issues, client creation failure)
+        console.error("Unexpected error in fetchPagesInCategories:", error instanceof Error ? error.message : error);
+        return [];
+    }
+}
 
 
 

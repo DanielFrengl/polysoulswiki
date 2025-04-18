@@ -132,7 +132,7 @@ const WikiDashboard = () => {
   };
 
   return (
-    <Card className="w-[70vw] mx-auto">
+    <Card className="w-[70vw] mx-auto mt-25">
       <CardHeader>
         <div className="flex items-center justify-between space-x-2">
           <div>
@@ -150,7 +150,7 @@ const WikiDashboard = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4 mb-4">
+        <div className="flex md:flex-row flex-col gap-4 mb-4">
           <Button
             variant={activeEditor === null ? "default" : "outline"}
             onClick={() => handleTabClick(null)}
@@ -178,7 +178,7 @@ const WikiDashboard = () => {
         )}
 
         {activeEditor === "page" && (
-          <div className="space-y-4 mt-4">
+          <div className="space-y-4 mt-14">
             <PageForm
               initialData={initialData}
               onChange={handleFieldChange}
@@ -191,7 +191,7 @@ const WikiDashboard = () => {
         )}
 
         {activeEditor === "category" && (
-          <div className="space-y-4 mt-4">
+          <div className="space-y-4 mt-14">
             <CategoryForm
               initialData={initialDataCategory}
               onChange={handleFieldChangeCategory}
