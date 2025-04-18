@@ -61,6 +61,12 @@ export default function CategoryPageForm({
       onSubmit={async (e) => {
         e.preventDefault();
         onSubmit({ name, slug, description, hasPages }); // send IDs to backend
+        console.log("Form submitted:", {
+          name,
+          slug,
+          description,
+          hasPages,
+        });
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

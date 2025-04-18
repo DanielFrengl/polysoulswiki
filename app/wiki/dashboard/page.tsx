@@ -50,19 +50,40 @@ const WikiDashboard = () => {
     }
   };
 
-  const handleCreateCategory = () => {
+  const handleCreateCategory = async () => {
+    // Basic client-side check
+    if (!initialDataCategory.name || !initialDataCategory.description) {
+      toast.error("Category Name and Description cannot be empty.");
+      return; // Stop execution
+    }
+    // ... rest of the function
+    setIsSaving(true); // Use loading state
     try {
-      createCategory(
+      await createCategory(
+        // Add await here
         initialDataCategory.name,
+        initialDataCategory.slug, // Ensure slug is generated even for empty name?
         initialDataCategory.description,
-        initialDataCategory.slug,
         initialDataCategory.hasPages
       );
-      toast.success("Category created successfully");
-      router.push(`/wiki/${initialDataCategory.slug}`);
-    } catch (error) {
+      toast.success(
+        "Category created successfully: " + initialDataCategory.name
+      );
+      // Reset form state here
+      setInitialDataCategory({
+        name: "",
+        description: "",
+        slug: "",
+        hasPages: [],
+      });
+    } catch (error: any) {
+      // Catch the error properly
       console.error("Error creating category:", error);
-      toast.error("Error creating category: " + error);
+      toast.error(
+        "Error creating category: " + (error.message || "Unknown error")
+      );
+    } finally {
+      setIsSaving(false); // Reset loading state
     }
   };
 
@@ -111,7 +132,7 @@ const WikiDashboard = () => {
   };
 
   return (
-    <Card className="w-[70vw] mx-auto">
+    <Card className="w-[70vw] mx-auto mt-25">
       <CardHeader>
         <div className="flex items-center justify-between space-x-2">
           <div>
@@ -129,7 +150,7 @@ const WikiDashboard = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4 mb-4">
+        <div className="flex md:flex-row flex-col gap-4 mb-4">
           <Button
             variant={activeEditor === null ? "default" : "outline"}
             onClick={() => handleTabClick(null)}
@@ -157,7 +178,7 @@ const WikiDashboard = () => {
         )}
 
         {activeEditor === "page" && (
-          <div className="space-y-4 mt-4">
+          <div className="space-y-4 mt-14">
             <PageForm
               initialData={initialData}
               onChange={handleFieldChange}
@@ -170,7 +191,7 @@ const WikiDashboard = () => {
         )}
 
         {activeEditor === "category" && (
-          <div className="space-y-4 mt-4">
+          <div className="space-y-4 mt-14">
             <CategoryForm
               initialData={initialDataCategory}
               onChange={handleFieldChangeCategory}
