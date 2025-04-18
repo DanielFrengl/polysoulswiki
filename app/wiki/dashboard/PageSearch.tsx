@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
 import {
   Command,
   CommandInput,
@@ -11,14 +9,20 @@ import {
   CommandEmpty,
 } from "@/components/ui/command";
 
+import { createClient } from "@/utils/supabase/client";
+
 type WikiPage = {
   title: string;
   slug: string;
 };
 
-export default function WikiSearch() {
+export default function WikiPageSearch({
+  onSelect,
+}: {
+  onSelect: (page: WikiPage) => void;
+}) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<WikiPage[]>([]); // ✅ Fixed type
+  const [results, setResults] = useState<WikiPage[]>([]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -41,28 +45,36 @@ export default function WikiSearch() {
       .limit(10);
 
     if (!error && data) {
-      setResults(data as WikiPage[]); // optional cast
+      setResults(data);
     } else {
       setResults([]);
     }
   };
 
   return (
-    <Command className="max-w-md border rounded shadow bg-background">
+    <Command className="max-w-md border rounded shadow bg-background relative z-50">
       <CommandInput
-        placeholder="Search"
+        placeholder="Search wiki pages..."
         value={query}
-        onValueChange={setQuery}
+        onValueChange={(val) => setQuery(val)}
       />
       <CommandList>
-        {results.length > 0 && (
-          <ul className="absolute bg-white z-50 border rounded shadow mt-2 px-20 text-black">
-            {results.map((page) => (
-              <li key={page.slug} className="p-2 hover:bg-gray-100">
-                <Link href={`/wiki/${page.slug}`}>{page.title}</Link>
-              </li>
-            ))}
-          </ul>
+        {results.length > 0 ? (
+          results.map((page) => (
+            <CommandItem
+              key={page.slug}
+              value={page.title}
+              onSelect={() => {
+                onSelect(page);
+                setQuery(""); // Clear input after select
+                setResults([]);
+              }}
+            >
+              {page.title}
+            </CommandItem>
+          ))
+        ) : (
+          <CommandEmpty>No results found.</CommandEmpty>
         )}
       </CommandList>
     </Command>

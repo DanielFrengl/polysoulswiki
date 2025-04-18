@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { handleSignout } from "@/app/utils/supabase/logout";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createPage } from "@/app/wiki/action";
+import { createCategory, createPage } from "@/app/wiki/action";
 import { toast } from "sonner";
 import WikiAdminPage from "../admin/page";
 import PageForm from "@/components/wiki/PageForm";
@@ -52,17 +52,17 @@ const WikiDashboard = () => {
 
   const handleCreateCategory = () => {
     try {
-      createPage(
+      createCategory(
         initialDataCategory.name,
         initialDataCategory.description,
         initialDataCategory.slug,
         initialDataCategory.hasPages
       );
-      toast.success("Page created successfully");
-      router.push(`/wiki/${initialData.slug}`);
+      toast.success("Category created successfully");
+      router.push(`/wiki/${initialDataCategory.slug}`);
     } catch (error) {
-      console.error("Error creating page:", error);
-      toast.error("Error creating page: " + error);
+      console.error("Error creating category:", error);
+      toast.error("Error creating category: " + error);
     }
   };
 
@@ -94,6 +94,17 @@ const WikiDashboard = () => {
   ) => {
     console.log(`Field changed: ${field}, New value: ${value}`);
     setInitialData((currentState) => ({
+      ...currentState,
+      [field]: value,
+    }));
+  };
+
+  const handleFieldChangeCategory = (
+    field: "name" | "slug" | "description" | "hasPages",
+    value: string | string[]
+  ) => {
+    console.log(`Field changed: ${field}, New value: ${value}`);
+    setInitialDataCategory((currentState) => ({
       ...currentState,
       [field]: value,
     }));
@@ -152,7 +163,7 @@ const WikiDashboard = () => {
               onChange={handleFieldChange}
               onSubmit={() => {}}
             />
-            <Button variant="default" onClick={handleCreate}>
+            <Button variant="default" onClick={handleCreatePage}>
               Create a page
             </Button>
           </div>
@@ -161,11 +172,11 @@ const WikiDashboard = () => {
         {activeEditor === "category" && (
           <div className="space-y-4 mt-4">
             <CategoryForm
-              initialData={initialData}
-              onChange={handleFieldChange}
+              initialData={initialDataCategory}
+              onChange={handleFieldChangeCategory}
               onSubmit={() => {}}
             />
-            <Button variant="outline" onClick={() => setActiveEditor(null)}>
+            <Button variant="outline" onClick={handleCreateCategory}>
               Create Category
             </Button>
           </div>

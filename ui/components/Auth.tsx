@@ -7,6 +7,7 @@ import Dropdown from "./Dropdown";
 import { AuthProvider } from "@/context/AuthContext";
 import { CiLocationArrow1 } from "react-icons/ci";
 import { DropDownNav } from "@/components/DropDownNav";
+import { Button } from "@/components/ui/button";
 
 export default function AuthPopup() {
   const { user, loading } = useAuth();
@@ -20,11 +21,10 @@ export default function AuthPopup() {
         <DropDownNav />
       ) : (
         <div className="flex flex-row items-center">
-          <a
-            href="/login"
-            className="px-5 py-3 bg-emerald-800 rounded-md font-semibold font-rubik text-white"
-          >
-            Login
+          <a href="/login">
+            <Button variant="default" className="text-white dark:text-black">
+              Login
+            </Button>
           </a>
         </div>
       )}
