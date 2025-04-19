@@ -4,7 +4,7 @@ import { fetchCategories, fetchPages, fetchPagesInCategories } from "../action";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardHeader, CardContent for better structure
-
+import Loader from "@/components/ui/loader";
 
 interface WikiPage {
   id: string;
@@ -18,14 +18,6 @@ interface WikiCategory {
   name: string;
   slug: string;
 }
-
-// Note: WikiCategoryPages interface might not be needed directly in the component
-// if fetchPagesInCategories resolves the pages directly based on categoryId.
-// interface WikiCategoryPages {
-//   id: string;
-//   category_id: string;
-//   page_id: string;
-// }
 
 type ViewMode = "categories" | "categoryPages" | "allPages";
 
@@ -116,7 +108,7 @@ export default function WikiAdminPage() {
           <h1 className="p-2 mb-6 font-semibold text-2xl border-b">
             Wiki Categories
           </h1>
-          {isLoading &&  }
+          {isLoading && <Loader />}
           {!isLoading && categories.length === 0 && <p>No categories found.</p>}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {categories?.map((category) => (
@@ -152,7 +144,7 @@ export default function WikiAdminPage() {
             </Button>
           </div>
 
-          {isLoading &&  }
+          {isLoading && <Loader />}
 
           {!isLoading && categoryPages.length === 0 && (
             <p>No pages found in this category.</p>
@@ -203,7 +195,7 @@ export default function WikiAdminPage() {
               ← Back to Categories
             </Button>
           </div>
-          {isLoading &&  }
+          {isLoading && <Loader />}
           {!isLoading && (
             <div className="space-y-4 mt-20">
               {allPages?.map((page) => (
