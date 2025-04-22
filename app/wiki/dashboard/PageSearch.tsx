@@ -58,7 +58,7 @@ export default function WikiPageSearch({
         value={query}
         onValueChange={(val) => setQuery(val)}
       />
-      <CommandList className="bg-black">
+      <CommandList className="">
         {results.length > 0 ? (
           results.map((page) => (
             <CommandItem
@@ -75,7 +75,7 @@ export default function WikiPageSearch({
             </CommandItem>
           ))
         ) : (
-          <CommandEmpty>No results.</CommandEmpty>
+          <CommandEmpty>No results found.</CommandEmpty>
         )}
       </CommandList>
     </Command>

@@ -19,7 +19,7 @@ interface WikiCategory {
   slug: string;
 }
 
-type ViewMode = "categories" | "categoryPages" | "allPages";
+type ViewMode = "categories" | "categoryPages" | "allPages" | "editCategory";
 
 export default function WikiAdminPage() {
   // State for all pages (optional, could be removed if not showing "All Pages" view)
@@ -76,6 +76,16 @@ export default function WikiAdminPage() {
   // Handler for clicking a category card
   const handleCategoryClick = (category: WikiCategory) => {
     setSelectedCategory(category);
+    setViewMode("categoryPages");
+  };
+
+  const handleCategoryEditingClick = (category: WikiCategory) => {
+    setSelectedCategory(category);
+    setViewMode("editCategory");
+  };
+
+  const handleBackView = () => {
+    setSelectedCategory(selectedCategory);
     setViewMode("categoryPages");
   };
 
@@ -136,12 +146,23 @@ export default function WikiAdminPage() {
       {viewMode === "categoryPages" && selectedCategory && (
         <>
           <div className="flex items-center justify-between mb-6 border-b pb-2">
-            <h1 className="p-2 font-semibold text-2xl">
-              Pages in: {selectedCategory.name}
-            </h1>
-            <Button variant="outline" onClick={handleBackToCategories}>
-              ← Back to Categories
-            </Button>
+            <div>
+              <h1 className="p-2 font-semibold text-2xl">
+                Category: {selectedCategory.name}
+              </h1>
+            </div>
+            <div className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handleCategoryEditingClick(selectedCategory)}
+              >
+                Edit
+              </Button>
+              <Button variant="destructive">Delete</Button>
+              <Button variant="outline" onClick={handleBackToCategories}>
+                ← Back to Categories
+              </Button>
+            </div>
           </div>
 
           {isLoading && <Loader />}
@@ -179,6 +200,45 @@ export default function WikiAdminPage() {
                       </Button>
                     </Link>
                     {/* Consider adding a Delete button here */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {viewMode === "editCategory" && selectedCategory && (
+        <>
+          <div className="flex items-center justify-between mb-6 border-b pb-2">
+            <h1 className="p-2 font-semibold text-2xl">
+              Editing: {selectedCategory.name}
+            </h1>
+            <Button variant="outline" onClick={handleBackView}>
+              ← Go Back
+            </Button>
+          </div>
+          {isLoading && <Loader />}
+          {!isLoading && (
+            <div className="space-y-4 mt-20">
+              {allPages?.map((page) => (
+                <div
+                  key={page.id}
+                  className="border p-4 rounded-lg shadow-sm flex items-center justify-between"
+                >
+                  <div>
+                    <h2 className="text-lg font-medium">{page.title}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Last updated: {new Date(page.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href={`/wiki/${page.slug}`}>
+                      <Button variant="outline">View</Button>
+                    </Link>
+                    <Link href={`/wiki/edit/${page.slug}`}>
+                      <Button variant="default">Edit</Button>
+                    </Link>
                   </div>
                 </div>
               ))}
