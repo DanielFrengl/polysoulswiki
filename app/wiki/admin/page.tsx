@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardHeader, CardContent for better structure
 import Loader from "@/components/ui/loader";
+import CategoryForm from "@/components/wiki/CategoryForm";
 
 interface WikiPage {
   id: string;
@@ -30,7 +31,32 @@ export default function WikiAdminPage() {
   );
   const [categoryPages, setCategoryPages] = useState<WikiPage[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>("categories");
-  const [isLoading, setIsLoading] = useState(false); // For loading state feedback
+  const [isLoading, setIsLoading] = useState(false); // For loading state
+
+  const [initialDataCategory, setInitialDataCategory] = useState<{
+    name: string;
+    description: string;
+    slug: string;
+    hasPages: string[];
+  }>({
+    name: "",
+    description: "",
+    slug: "",
+    hasPages: [],
+  });
+
+  const handleFieldChangeCategory = (
+    field: "name" | "slug" | "description" | "hasPages",
+    value: string | string[]
+  ) => {
+    console.log(`Field changed: ${field}, New value: ${value}`);
+    setInitialDataCategory((currentState) => ({
+      ...currentState,
+      [field]: value,
+    }));
+  };
+
+  useEffect(() => {});
 
   // Fetch all categories on mount
   useEffect(() => {
@@ -221,27 +247,7 @@ export default function WikiAdminPage() {
           {isLoading && <Loader />}
           {!isLoading && (
             <div className="space-y-4 mt-20">
-              {allPages?.map((page) => (
-                <div
-                  key={page.id}
-                  className="border p-4 rounded-lg shadow-sm flex items-center justify-between"
-                >
-                  <div>
-                    <h2 className="text-lg font-medium">{page.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Last updated: {new Date(page.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Link href={`/wiki/${page.slug}`}>
-                      <Button variant="outline">View</Button>
-                    </Link>
-                    <Link href={`/wiki/edit/${page.slug}`}>
-                      <Button variant="default">Edit</Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
+              <CategoryForm />
             </div>
           )}
         </>

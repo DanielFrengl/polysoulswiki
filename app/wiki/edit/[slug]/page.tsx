@@ -87,7 +87,7 @@ export default function WikiEditPage() {
         `>>> handleFieldChange: Setting new state based on previous:`,
         newState
       );
-      return newState; // Return the new state object ses negr ty debile
+      return newState; // Return the new state object
     });
   };
 
@@ -105,7 +105,7 @@ export default function WikiEditPage() {
     // Log the data being sent
     const dataToUpdate = {
       title: initialData.title, // Use initialData.title
-      content: initialData.content, // Use initialData.content nebudeš me srát ty zmrde
+      content: initialData.content, // Use initialData.content
       slug: initialData.slug, // Use initialData.slug
       updated_at: new Date().toISOString(),
     };
