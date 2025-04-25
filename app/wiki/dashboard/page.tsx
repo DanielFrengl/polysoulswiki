@@ -71,6 +71,7 @@ const WikiDashboard = () => {
       );
       // Reset form state here
       setInitialDataCategory({
+        id: "",
         name: "",
         description: "",
         slug: "",
@@ -98,11 +99,13 @@ const WikiDashboard = () => {
   });
 
   const [initialDataCategory, setInitialDataCategory] = useState<{
+    id: string;
     name: string;
     description: string;
     slug: string;
     hasPages: string[];
   }>({
+    id: "",
     name: "",
     description: "",
     slug: "",

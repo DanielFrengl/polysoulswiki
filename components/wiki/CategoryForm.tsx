@@ -9,6 +9,7 @@ import { fetchPageIdsFromSlugs } from "@/app/wiki/action";
 
 type CategoryFormProps = {
   initialData?: {
+    id: string;
     name: string;
     description: string;
     slug: string;

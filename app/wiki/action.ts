@@ -1,6 +1,8 @@
 
 "use server";
 import { createClient } from "@/utils/supabase/server";
+import { WikiCategory } from "./admin/page";
+import { WikiCategoryEdit } from "./admin/page";
 
 export async function deletePage(slug: string): Promise<void> {
   const supabase = await createClient();
@@ -256,4 +258,38 @@ export async function fetchPagesByTitle(title: string) {
   
     console.log("Category created and pages linked:", category.id);
   }
+
+
+  
+
+  export async function updateCategory(id: string, data: {
+    name: string;
+    slug: string;
+    description: string;
+    hasPages: string[]
+  }) {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("wiki_categories")
+      .update({
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+      })
+      .eq("id", id);
+      console.log("Updated category successfully")
+
+  
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const category = await fetchCategoryBySlug(data.slug)
+    const pageIds = await fetchPageIdsFromSlugs(data.hasPages)
+
+    await updatePagesForCategory(category.id, pageIds)
+    console.log("Category created and pages linked:", category.id, pageIds);
+  
+  }
+
   

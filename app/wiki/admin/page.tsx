@@ -6,17 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardHeader, CardContent for better structure
 import Loader from "@/components/ui/loader";
 import CategoryForm from "@/components/wiki/CategoryForm";
+import CategoryEdit from "@/components/wiki/Category";
 
 interface WikiPage {
   id: string;
   title: string;
   slug: string;
-  created_at: string; // Keep as string, format on display
+  created_at: string;
 }
 
 interface WikiCategory {
   id: string;
   name: string;
+  description: string;
   slug: string;
 }
 
@@ -96,10 +98,10 @@ export default function WikiAdminPage() {
         }
       };
       loadCategoryPages();
+      console.log(selectedCategory);
     }
   }, [selectedCategory]); // Dependency array ensures this runs when selectedCategory changes
 
-  // Handler for clicking a category card
   const handleCategoryClick = (category: WikiCategory) => {
     setSelectedCategory(category);
     setViewMode("categoryPages");
@@ -235,22 +237,13 @@ export default function WikiAdminPage() {
       )}
 
       {viewMode === "editCategory" && selectedCategory && (
-        <>
-          <div className="flex items-center justify-between mb-6 border-b pb-2">
-            <h1 className="p-2 font-semibold text-2xl">
-              Editing: {selectedCategory.name}
-            </h1>
-            <Button variant="outline" onClick={handleBackView}>
-              ← Go Back
-            </Button>
-          </div>
-          {isLoading && <Loader />}
-          {!isLoading && (
-            <div className="space-y-4 mt-20">
-              <CategoryForm />
-            </div>
-          )}
-        </>
+        <CategoryEdit
+          selectedCategory={selectedCategory}
+          categoryPages={categoryPages}
+          handleBackView={handleBackView}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+        />
       )}
 
       {viewMode === "allPages" && (
