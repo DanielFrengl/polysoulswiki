@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import { IoMdArrowDropdown } from "react-icons/io";
-import WikiSearch from "./SearchBar";
+import WikiSearch from "../SearchBar";
 import { FaUser } from "react-icons/fa";
 import { HiMenu, HiX } from "react-icons/hi";
-import AuthPopup from "./Auth";
+import AuthPopup from "../Auth";
 import Logo from "@/public/logo/logo.png";
 import Image from "next/image";
 

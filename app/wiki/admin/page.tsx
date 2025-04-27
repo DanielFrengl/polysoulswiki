@@ -4,30 +4,27 @@ import { fetchCategories, fetchPages, fetchPagesInCategories } from "../action";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardHeader, CardContent for better structure
+import Loader from "@/components/ui/loader";
+import CategoryForm from "@/components/wiki/CategoryForm";
+import CategoryEdit from "@/components/wiki/CategoryEditor";
+import CategoryPages from "@/components/wiki/CategoryPages";
+import AllPages from "@/components/wiki/AllPages";
 
-
-interface WikiPage {
+export interface WikiPage {
   id: string;
   title: string;
   slug: string;
-  created_at: string; // Keep as string, format on display
+  created_at: string;
 }
 
 interface WikiCategory {
   id: string;
   name: string;
+  description: string;
   slug: string;
 }
 
-// Note: WikiCategoryPages interface might not be needed directly in the component
-// if fetchPagesInCategories resolves the pages directly based on categoryId.
-// interface WikiCategoryPages {
-//   id: string;
-//   category_id: string;
-//   page_id: string;
-// }
-
-type ViewMode = "categories" | "categoryPages" | "allPages";
+type ViewMode = "categories" | "categoryPages" | "allPages" | "editCategory";
 
 export default function WikiAdminPage() {
   // State for all pages (optional, could be removed if not showing "All Pages" view)
@@ -38,7 +35,32 @@ export default function WikiAdminPage() {
   );
   const [categoryPages, setCategoryPages] = useState<WikiPage[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>("categories");
-  const [isLoading, setIsLoading] = useState(false); // For loading state feedback
+  const [isLoading, setIsLoading] = useState(false); // For loading state
+
+  const [initialDataCategory, setInitialDataCategory] = useState<{
+    name: string;
+    description: string;
+    slug: string;
+    hasPages: string[];
+  }>({
+    name: "",
+    description: "",
+    slug: "",
+    hasPages: [],
+  });
+
+  const handleFieldChangeCategory = (
+    field: "name" | "slug" | "description" | "hasPages",
+    value: string | string[]
+  ) => {
+    console.log(`Field changed: ${field}, New value: ${value}`);
+    setInitialDataCategory((currentState) => ({
+      ...currentState,
+      [field]: value,
+    }));
+  };
+
+  useEffect(() => {});
 
   // Fetch all categories on mount
   useEffect(() => {
@@ -78,12 +100,22 @@ export default function WikiAdminPage() {
         }
       };
       loadCategoryPages();
+      console.log(selectedCategory);
     }
   }, [selectedCategory]); // Dependency array ensures this runs when selectedCategory changes
 
-  // Handler for clicking a category card
   const handleCategoryClick = (category: WikiCategory) => {
     setSelectedCategory(category);
+    setViewMode("categoryPages");
+  };
+
+  const handleCategoryEditingClick = (category: WikiCategory) => {
+    setSelectedCategory(category);
+    setViewMode("editCategory");
+  };
+
+  const handleBackView = () => {
+    setSelectedCategory(selectedCategory);
     setViewMode("categoryPages");
   };
 
@@ -116,7 +148,7 @@ export default function WikiAdminPage() {
           <h1 className="p-2 mb-6 font-semibold text-2xl border-b">
             Wiki Categories
           </h1>
-          {isLoading &&  }
+          {isLoading && <Loader />}
           {!isLoading && categories.length === 0 && <p>No categories found.</p>}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {categories?.map((category) => (
@@ -142,94 +174,35 @@ export default function WikiAdminPage() {
 
       {/* View: Pages within a Selected Category */}
       {viewMode === "categoryPages" && selectedCategory && (
-        <>
-          <div className="flex items-center justify-between mb-6 border-b pb-2">
-            <h1 className="p-2 font-semibold text-2xl">
-              Pages in: {selectedCategory.name}
-            </h1>
-            <Button variant="outline" onClick={handleBackToCategories}>
-              ← Back to Categories
-            </Button>
-          </div>
+        <CategoryPages
+          selectedCategory={selectedCategory}
+          categoryPages={categoryPages}
+          handleBackToCategories={handleBackToCategories}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          handleCategoryEditingClick={() =>
+            handleCategoryEditingClick(selectedCategory)
+          }
+        />
+      )}
 
-          {isLoading &&  }
-
-          {!isLoading && categoryPages.length === 0 && (
-            <p>No pages found in this category.</p>
-          )}
-
-          {!isLoading && categoryPages.length > 0 && (
-            <div className="space-y-4">
-              {categoryPages.map((page) => (
-                <div
-                  key={page.id}
-                  className="border p-4 rounded-lg shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                >
-                  <div className="flex-grow">
-                    <h2 className="text-lg font-medium">{page.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Created: {new Date(page.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Link href={`/wiki/${page.slug}`} passHref legacyBehavior>
-                      <Button asChild variant="outline">
-                        <a>View</a>
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/wiki/edit/${page.slug}`}
-                      passHref
-                      legacyBehavior
-                    >
-                      <Button asChild variant="default">
-                        <a>Edit</a>
-                      </Button>
-                    </Link>
-                    {/* Consider adding a Delete button here */}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+      {viewMode === "editCategory" && selectedCategory && (
+        <CategoryEdit
+          selectedCategory={selectedCategory}
+          categoryPages={categoryPages}
+          handleBackView={handleBackView}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+        />
       )}
 
       {viewMode === "allPages" && (
-        <>
-          <div className="flex items-center justify-between mb-6 border-b pb-2">
-            <h1 className="p-2 font-semibold text-2xl">All Wiki Pages</h1>
-            <Button variant="outline" onClick={handleBackToCategories}>
-              ← Back to Categories
-            </Button>
-          </div>
-          {isLoading &&  }
-          {!isLoading && (
-            <div className="space-y-4 mt-20">
-              {allPages?.map((page) => (
-                <div
-                  key={page.id}
-                  className="border p-4 rounded-lg shadow-sm flex items-center justify-between"
-                >
-                  <div>
-                    <h2 className="text-lg font-medium">{page.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Last updated: {new Date(page.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Link href={`/wiki/${page.slug}`}>
-                      <Button variant="outline">View</Button>
-                    </Link>
-                    <Link href={`/wiki/edit/${page.slug}`}>
-                      <Button variant="default">Edit</Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+        <AllPages
+          allPages={allPages}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          handleBackToCategories={handleBackToCategories}
+        />
       )}
     </div>
   );

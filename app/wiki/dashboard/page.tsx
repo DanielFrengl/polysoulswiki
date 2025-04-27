@@ -22,17 +22,20 @@ import PageForm from "@/components/wiki/PageForm";
 import CategoryForm from "@/components/wiki/CategoryForm";
 
 const WikiDashboard = () => {
-  const [activeEditor, setActiveEditor] = useState<"page" | "category" | null>(
-    null
-  );
+  const [activeEditor, setActiveEditor] = useState<
+    "page" | "category" | "nav" | null
+  >(null);
 
   const router = useRouter();
 
-  const handleTabClick = (tab: "page" | "category" | null) => {
+  const handleTabClick = (tab: "page" | "category" | "nav" | null) => {
     if (tab === "page") {
     }
     if (tab === "category") {
     }
+    if (tab === "nav") {
+    }
+
     setActiveEditor(tab);
   };
 
@@ -71,6 +74,7 @@ const WikiDashboard = () => {
       );
       // Reset form state here
       setInitialDataCategory({
+        id: "",
         name: "",
         description: "",
         slug: "",
@@ -87,6 +91,8 @@ const WikiDashboard = () => {
     }
   };
 
+  handleCreate;
+
   const [initialData, setInitialData] = useState<{
     title: string;
     slug: string;
@@ -98,11 +104,13 @@ const WikiDashboard = () => {
   });
 
   const [initialDataCategory, setInitialDataCategory] = useState<{
+    id: string;
     name: string;
     description: string;
     slug: string;
     hasPages: string[];
   }>({
+    id: "",
     name: "",
     description: "",
     slug: "",
@@ -169,6 +177,12 @@ const WikiDashboard = () => {
           >
             Create a Category
           </Button>
+          <Button
+            variant={activeEditor === "nav" ? "default" : "outline"}
+            onClick={() => handleTabClick("nav")}
+          >
+            Edit Navigation
+          </Button>
         </div>
 
         {activeEditor === null && (
@@ -202,6 +216,8 @@ const WikiDashboard = () => {
             </Button>
           </div>
         )}
+
+        {activeEditor === "nav" && <div className="space-y-4 mt-14"></div>}
       </CardContent>
     </Card>
   );
