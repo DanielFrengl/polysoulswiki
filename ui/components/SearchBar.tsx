@@ -1,15 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandItem,
-  CommandEmpty,
-} from "@/components/ui/command";
 
 type WikiPage = {
   title: string;
@@ -18,7 +11,10 @@ type WikiPage = {
 
 export default function WikiSearch() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<WikiPage[]>([]); // ✅ Fixed type
+  const [results, setResults] = useState<WikiPage[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -26,6 +22,7 @@ export default function WikiSearch() {
         searchWiki(query);
       } else {
         setResults([]);
+        setIsOpen(false);
       }
     }, 300);
 
@@ -41,30 +38,47 @@ export default function WikiSearch() {
       .limit(10);
 
     if (!error && data) {
-      setResults(data as WikiPage[]); // optional cast
+      setResults(data as WikiPage[]);
+      setIsOpen(true);
     } else {
       setResults([]);
+      setIsOpen(false);
     }
   };
 
+  const handleSelect = (slug: string) => {
+    router.push(`/wiki/${slug}`);
+    setQuery("");
+    setIsOpen(false);
+  };
+
   return (
-    <Command className="max-w-md border rounded shadow bg-background">
-      <CommandInput
-        placeholder="Search"
+    <div className="relative w-full max-w-md mx-auto">
+      <input
+        type="text"
+        className="w-full border rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Search wiki pages..."
         value={query}
-        onValueChange={setQuery}
+        onChange={(e) => setQuery(e.target.value)}
       />
-      <CommandList>
-        {results.length > 0 && (
-          <ul className="absolute bg-white z-50 border rounded shadow mt-2 px-20 text-black">
-            {results.map((page) => (
-              <li key={page.slug} className="p-2 hover:bg-gray-100">
-                <Link href={`/wiki/${page.slug}`}>{page.title}</Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CommandList>
-    </Command>
+
+      {isOpen && (
+        <div className="absolute w-full mt-2 bg-white dark:bg-black dark:text-white border rounded shadow-lg z-50 max-h-60 overflow-y-auto">
+          {results.length > 0 ? (
+            results.map((page) => (
+              <div
+                key={page.slug}
+                onClick={() => handleSelect(page.slug)}
+                className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+              >
+                {page.title}
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-2 text-gray-500">No results found.</div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

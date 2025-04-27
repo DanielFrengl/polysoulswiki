@@ -5,7 +5,7 @@ import CategoryForm from "@/components/wiki/CategoryForm";
 import { updateCategory } from "@/app/wiki/action";
 import { toast } from "sonner";
 
-type CategoryEditProps = {
+export type CategoryEditProps = {
   selectedCategory: {
     id: string;
     name: string;

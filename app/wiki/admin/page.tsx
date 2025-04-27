@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardHeader, CardContent for better structure
 import Loader from "@/components/ui/loader";
 import CategoryForm from "@/components/wiki/CategoryForm";
-import CategoryEdit from "@/components/wiki/Category";
+import CategoryEdit from "@/components/wiki/CategoryEditor";
+import CategoryPages from "@/components/wiki/CategoryPages";
+import AllPages from "@/components/wiki/AllPages";
 
-interface WikiPage {
+export interface WikiPage {
   id: string;
   title: string;
   slug: string;
@@ -172,68 +174,16 @@ export default function WikiAdminPage() {
 
       {/* View: Pages within a Selected Category */}
       {viewMode === "categoryPages" && selectedCategory && (
-        <>
-          <div className="flex items-center justify-between mb-6 border-b pb-2">
-            <div>
-              <h1 className="p-2 font-semibold text-2xl">
-                Category: {selectedCategory.name}
-              </h1>
-            </div>
-            <div className="gap-2">
-              <Button
-                variant="outline"
-                onClick={() => handleCategoryEditingClick(selectedCategory)}
-              >
-                Edit
-              </Button>
-              <Button variant="destructive">Delete</Button>
-              <Button variant="outline" onClick={handleBackToCategories}>
-                ← Back to Categories
-              </Button>
-            </div>
-          </div>
-
-          {isLoading && <Loader />}
-
-          {!isLoading && categoryPages.length === 0 && (
-            <p>No pages found in this category.</p>
-          )}
-
-          {!isLoading && categoryPages.length > 0 && (
-            <div className="space-y-4">
-              {categoryPages.map((page) => (
-                <div
-                  key={page.id}
-                  className="border p-4 rounded-lg shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                >
-                  <div className="flex-grow">
-                    <h2 className="text-lg font-medium">{page.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Created: {new Date(page.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Link href={`/wiki/${page.slug}`} passHref legacyBehavior>
-                      <Button asChild variant="outline">
-                        <a>View</a>
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/wiki/edit/${page.slug}`}
-                      passHref
-                      legacyBehavior
-                    >
-                      <Button asChild variant="default">
-                        <a>Edit</a>
-                      </Button>
-                    </Link>
-                    {/* Consider adding a Delete button here */}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+        <CategoryPages
+          selectedCategory={selectedCategory}
+          categoryPages={categoryPages}
+          handleBackToCategories={handleBackToCategories}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          handleCategoryEditingClick={() =>
+            handleCategoryEditingClick(selectedCategory)
+          }
+        />
       )}
 
       {viewMode === "editCategory" && selectedCategory && (
@@ -247,40 +197,12 @@ export default function WikiAdminPage() {
       )}
 
       {viewMode === "allPages" && (
-        <>
-          <div className="flex items-center justify-between mb-6 border-b pb-2">
-            <h1 className="p-2 font-semibold text-2xl">All Wiki Pages</h1>
-            <Button variant="outline" onClick={handleBackToCategories}>
-              ← Back to Categories
-            </Button>
-          </div>
-          {isLoading && <Loader />}
-          {!isLoading && (
-            <div className="space-y-4 mt-20">
-              {allPages?.map((page) => (
-                <div
-                  key={page.id}
-                  className="border p-4 rounded-lg shadow-sm flex items-center justify-between"
-                >
-                  <div>
-                    <h2 className="text-lg font-medium">{page.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Last updated: {new Date(page.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Link href={`/wiki/${page.slug}`}>
-                      <Button variant="outline">View</Button>
-                    </Link>
-                    <Link href={`/wiki/edit/${page.slug}`}>
-                      <Button variant="default">Edit</Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+        <AllPages
+          allPages={allPages}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          handleBackToCategories={handleBackToCategories}
+        />
       )}
     </div>
   );
