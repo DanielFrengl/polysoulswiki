@@ -1,0 +1,149 @@
+// PolySouls Wiki — Prisma schema
+// Postgres (Neon). Auth tables follow BetterAuth conventions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Auth (BetterAuth)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  // App fields (exposed to BetterAuth via additionalFields)
+  role          String   @default("reader") // reader | editor | admin
+  username      String?  @unique
+  bio           String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  authoredPages WikiPage[]     @relation("PageAuthor")
+  revisions     PageRevision[] @relation("RevisionEditor")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ---------------------------------------------------------------------------
+// Wiki
+// ---------------------------------------------------------------------------
+
+model WikiPage {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  content   String // current rendered HTML (from Tiptap)
+  summary   String? // short description / lead
+  authorId  String?
+  author    User?    @relation("PageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categories WikiPageCategory[]
+  revisions  PageRevision[]
+
+  @@index([slug])
+  @@index([updatedAt])
+  @@map("wiki_page")
+}
+
+model WikiCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pages WikiPageCategory[]
+
+  @@map("wiki_category")
+}
+
+// Explicit join table (page <-> category, many-to-many)
+model WikiPageCategory {
+  pageId     String
+  categoryId String
+  page       WikiPage     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  category   WikiCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  assignedAt DateTime     @default(now())
+
+  @@id([pageId, categoryId])
+  @@index([categoryId])
+  @@map("wiki_page_category")
+}
+
+// One row per save = full content snapshot (wiki-style revision history)
+model PageRevision {
+  id        String   @id @default(cuid())
+  pageId    String
+  page      WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  comment   String? // edit summary, like Wikipedia
+  editorId  String?
+  editor    User?    @relation("RevisionEditor", fields: [editorId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([pageId, createdAt])
+  @@map("page_revision")
+}

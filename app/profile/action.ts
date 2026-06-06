@@ -1,30 +1,49 @@
-    import { useState } from "react";
-    import { checkUserLoggedIn, supabase } from "../../utils/supabase/client";
-    import { toast } from "sonner";
+"use server";
 
+import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/permissions";
+import type { ActionResult } from "@/lib/types";
 
-    checkUserLoggedIn();
+function permissionError(err: unknown): string {
+  if (err instanceof Error && (err.message === "UNAUTHORIZED" || err.message === "FORBIDDEN")) {
+    return "You don't have permission to do this.";
+  }
+  return err instanceof Error ? err.message : "Something went wrong.";
+}
 
-    const [name, setName] = useState("");
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [passwordAgain, setPasswordAgain] = useState("");
+export async function updateProfile(input: {
+  name: string;
+  username?: string;
+  bio?: string;
+}): Promise<ActionResult> {
+  try {
+    const user = await requireUser();
 
-    export const updateProfile = async () => {
-        if (password !== passwordAgain) {
-            toast.error("Passwords do not match");
-            return;
-        }
+    const name = input.name.trim();
+    if (!name) return { ok: false, error: "Name is required." };
 
-        const { data, error } = await supabase
-            .from("profiles")
-            .update({ name, username, email, password })
-            .eq("id", "user-id"); // Replace "user-id" with the actual user ID
+    const username = input.username?.trim();
+    const bio = input.bio?.trim();
 
-        if (error) {
-            toast.error(error.message);
-        } else {
-            toast.success("Profile updated successfully");
-        }
-    };
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name,
+        username: username ? username : null,
+        bio: bio ? bio : null,
+      },
+    });
+
+    revalidatePath("/profile");
+
+    return { ok: true, data: undefined };
+  } catch (err) {
+    // Unique-constraint violation on username -> friendly message.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return { ok: false, error: "That username is already taken." };
+    }
+    return { ok: false, error: permissionError(err) };
+  }
+}

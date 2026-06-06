@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "@/ui/components/nav/NavBar";
+import NavBar from "@/components/nav/NavBar";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/theme-button";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Polysouls Wiki",
-  description: "A wiki for the Polysouls community",
+  title: "PolySouls Wiki",
+  description: "The official community wiki for the game PolySouls.",
 };
 
 export default function RootLayout({
@@ -19,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className="min-h-screen">
         <AuthProvider>
           <ThemeProvider
             attribute="class"
@@ -27,12 +25,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <main>
-              <NavBar />
-              {children}
-              <ModeToggle />
-            </main>
-            <Toaster />
+            <NavBar />
+            <main>{children}</main>
+            <Toaster richColors />
           </ThemeProvider>
         </AuthProvider>
       </body>

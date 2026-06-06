@@ -1,0 +1,19 @@
+# Optional local Postgres for development. Production uses Neon.
+# Usage: docker compose up -d   then point DATABASE_URL/DIRECT_URL at it:
+#   postgresql://polysouls:polysouls@localhost:5432/polysouls?schema=public
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: polysouls-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: polysouls
+      POSTGRES_PASSWORD: polysouls
+      POSTGRES_DB: polysouls
+    ports:
+      - "5432:5432"
+    volumes:
+      - polysouls_pgdata:/var/lib/postgresql/data
+
+volumes:
+  polysouls_pgdata:
