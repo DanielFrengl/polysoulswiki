@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Moon, Sun, LayoutDashboard, FolderTree, Shield, User, LogOut, Activity } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, FolderTree, Shield, User, LogOut, Activity, Eye } from "lucide-react";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -136,6 +136,12 @@ export default function NavBar() {
                     </Link>
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem asChild>
+                  <Link href="/wiki/watchlist">
+                    <Eye className="size-4" />
+                    Watchlist
+                  </Link>
+                </DropdownMenuItem>
                 {canEdit && (
                   <DropdownMenuItem asChild>
                     <Link href="/wiki/admin">

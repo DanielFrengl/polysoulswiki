@@ -19,10 +19,17 @@ export interface WikiPageFull {
   slug: string;
   content: string;
   summary: string | null;
+  infobox: InfoboxField[] | null;
   createdAt: Date;
   updatedAt: Date;
   author: { id: string; name: string; username: string | null } | null;
   categories: CategorySummary[];
+}
+
+/** One row in a page's infobox (the structured stat sidebar). */
+export interface InfoboxField {
+  label: string;
+  value: string;
 }
 
 export interface CategorySummary {
@@ -105,6 +112,25 @@ export interface RedirectInput {
   toPageSlug: string;
 }
 
+// Phase 3 ------------------------------------------------------------------
+
+/** A talk/discussion message; top-level messages carry their replies. */
+export interface TalkMessageNode {
+  id: string;
+  body: string;
+  createdAt: Date;
+  author: { id: string; name: string; username: string | null } | null;
+  /** True if the current viewer may delete this message (author or editor+). */
+  canDelete: boolean;
+  replies: TalkMessageNode[];
+}
+
+export interface TalkMessageInput {
+  pageSlug: string;
+  body: string;
+  parentId?: string | null; // set to reply to an existing message
+}
+
 // Input payloads ------------------------------------------------------------
 
 export interface PageInput {
@@ -112,6 +138,7 @@ export interface PageInput {
   slug: string;
   content: string;
   summary?: string | null;
+  infobox?: InfoboxField[] | null;
   categorySlugs?: string[];
   comment?: string | null; // edit summary for the revision
 }

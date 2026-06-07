@@ -3,13 +3,14 @@
 The official community wiki for the game [PolySouls](https://store.steampowered.com/app/3604950/PolySouls/).
 
 A Wikipedia/game-wiki style documentation site: pages with a rich-text editor
-(with image upload), categories, full-text search, revision history with diff &
-revert, a site-wide recent-changes feed, public user profiles with contribution
+(with image upload) and optional infoboxes, categories, full-text search,
+revision history with diff & revert, a site-wide recent-changes feed, per-page
+talk/discussion threads, watchlists, public user profiles with contribution
 history, redirects/aliases, role-based editing, and an admin panel.
 
 ## Tech stack
 
-- **Next.js 15** (App Router, RSC) · **React 19** · **TypeScript** (strict)
+- **Next.js 16** (App Router, RSC, Turbopack) · **React 19** · **TypeScript** (strict)
 - **Prisma** + **PostgreSQL** (Neon in production)
 - **BetterAuth** — email/password auth, sessions, roles
 - **shadcn/ui** (new-york) + **Tailwind CSS v4**

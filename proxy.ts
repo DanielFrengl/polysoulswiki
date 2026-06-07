@@ -4,7 +4,13 @@ import { getSessionCookie } from "better-auth/cookies";
 // Routes that require an authenticated session. Fine-grained role checks
 // (editor/admin) happen in server actions / page guards, since the proxy
 // runs on the edge and cannot read the DB.
-const PROTECTED_PREFIXES = ["/wiki/edit", "/wiki/new", "/wiki/admin", "/profile"];
+const PROTECTED_PREFIXES = [
+  "/wiki/edit",
+  "/wiki/new",
+  "/wiki/admin",
+  "/wiki/watchlist",
+  "/profile",
+];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,6 +35,7 @@ export const config = {
     "/wiki/edit/:path*",
     "/wiki/new",
     "/wiki/admin/:path*",
+    "/wiki/watchlist",
     "/profile/:path*",
   ],
 };

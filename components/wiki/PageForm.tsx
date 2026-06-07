@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Plus, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CategoryMultiSelect from "@/components/wiki/CategoryMultiSelect";
 import { createPage, updatePage } from "@/app/wiki/action";
 import { slugify } from "@/lib/slug";
-import type { CategoryWithCount, PageInput } from "@/lib/types";
+import type { CategoryWithCount, InfoboxField, PageInput } from "@/lib/types";
 
 // The Tiptap editor is client-only and heavy; load it lazily.
 const Editor = dynamic(() => import("@/components/wiki/Editor"), {
@@ -27,6 +27,7 @@ export interface PageFormInitial {
   summary: string;
   content: string;
   categorySlugs: string[];
+  infobox: InfoboxField[];
 }
 
 interface PageFormProps {
@@ -43,6 +44,7 @@ const EMPTY: PageFormInitial = {
   summary: "",
   content: "",
   categorySlugs: [],
+  infobox: [],
 };
 
 export default function PageForm({
@@ -60,7 +62,15 @@ export default function PageForm({
   const [summary, setSummary] = useState(initial.summary);
   const [content, setContent] = useState(initial.content);
   const [categorySlugs, setCategorySlugs] = useState<string[]>(initial.categorySlugs);
+  const [infobox, setInfobox] = useState<InfoboxField[]>(initial.infobox);
   const [comment, setComment] = useState("");
+
+  const addInfoboxRow = () =>
+    setInfobox((rows) => [...rows, { label: "", value: "" }]);
+  const updateInfoboxRow = (i: number, patch: Partial<InfoboxField>) =>
+    setInfobox((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const removeInfoboxRow = (i: number) =>
+    setInfobox((rows) => rows.filter((_, j) => j !== i));
 
   const onTitleChange = (next: string) => {
     setTitle(next);
@@ -80,6 +90,9 @@ export default function PageForm({
       slug: slug.trim() || title.trim(),
       content,
       summary: summary.trim() ? summary.trim() : null,
+      infobox: infobox
+        .map((f) => ({ label: f.label.trim(), value: f.value.trim() }))
+        .filter((f) => f.label.length > 0),
       categorySlugs,
       comment: comment.trim() ? comment.trim() : null,
     };
@@ -148,6 +161,54 @@ export default function PageForm({
           value={categorySlugs}
           onChange={setCategorySlugs}
         />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label>Infobox</Label>
+        <p className="text-xs text-muted-foreground">
+          Optional label/value pairs shown in a sidebar card (e.g. stats for a
+          character or item). Rows with an empty label are dropped.
+        </p>
+        {infobox.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {infobox.map((row, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input
+                  value={row.label}
+                  onChange={(e) => updateInfoboxRow(i, { label: e.target.value })}
+                  placeholder="Label"
+                  className="max-w-[12rem]"
+                  aria-label={`Infobox label ${i + 1}`}
+                />
+                <Input
+                  value={row.value}
+                  onChange={(e) => updateInfoboxRow(i, { value: e.target.value })}
+                  placeholder="Value"
+                  aria-label={`Infobox value ${i + 1}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Remove infobox row ${i + 1}`}
+                  onClick={() => removeInfoboxRow(i)}
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="self-start"
+          onClick={addInfoboxRow}
+        >
+          <Plus className="size-4" />
+          Add row
+        </Button>
       </div>
 
       <div className="flex flex-col gap-2">

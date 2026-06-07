@@ -3,10 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getPage, getRedirect } from "@/app/wiki/action";
 import { listRevisions } from "@/app/wiki/revisions";
+import { isWatching } from "@/app/wiki/watch";
 import { getCurrentUser } from "@/lib/permissions";
 import { canEdit } from "@/lib/permissions";
 import { formatDate } from "@/lib/utils";
+import { MessagesSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
@@ -19,6 +23,7 @@ import {
 import WikiContent from "@/components/wiki/WikiContent";
 import TableOfContents from "@/components/wiki/TableOfContents";
 import PageActions from "@/components/wiki/PageActions";
+import WatchButton from "@/components/wiki/WatchButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -52,6 +57,7 @@ export default async function WikiPage({ params, searchParams }: PageProps) {
   const revisions = await listRevisions(slug);
   const lastEditor = revisions[0]?.editor ?? page.author;
   const editable = canEdit(user?.role);
+  const watching = user ? await isWatching(page.slug) : false;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-8">
@@ -80,7 +86,18 @@ export default async function WikiPage({ params, searchParams }: PageProps) {
           <header className="mb-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <h1 className="text-4xl font-bold tracking-tight">{page.title}</h1>
-              {editable && <PageActions slug={page.slug} title={page.title} />}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/wiki/${page.slug}/talk`}>
+                    <MessagesSquare className="size-4" />
+                    Talk
+                  </Link>
+                </Button>
+                {user && (
+                  <WatchButton pageSlug={page.slug} initialWatching={watching} />
+                )}
+                {editable && <PageActions slug={page.slug} title={page.title} />}
+              </div>
             </div>
 
             {page.summary && (
@@ -127,7 +144,29 @@ export default async function WikiPage({ params, searchParams }: PageProps) {
         </div>
 
         <aside className="hidden lg:block">
-          <div className="sticky top-24">
+          <div className="sticky top-24 space-y-6">
+            {page.infobox && page.infobox.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{page.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="grid grid-cols-1 gap-y-2 text-sm">
+                    {page.infobox.map((field, i) => (
+                      <div
+                        key={`${field.label}-${i}`}
+                        className="grid grid-cols-[minmax(0,5rem)_minmax(0,1fr)] gap-2"
+                      >
+                        <dt className="text-muted-foreground font-medium break-words">
+                          {field.label}
+                        </dt>
+                        <dd className="break-words">{field.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </CardContent>
+              </Card>
+            )}
             <TableOfContents html={page.content} />
           </div>
         </aside>

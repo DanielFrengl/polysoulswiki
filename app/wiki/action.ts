@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireEditor } from "@/lib/permissions";
 import { slugify, isValidSlug } from "@/lib/slug";
@@ -9,6 +10,7 @@ import type {
   CategoryInput,
   CategorySummary,
   CategoryWithCount,
+  InfoboxField,
   PageInput,
   RedirectInput,
   RedirectRow,
@@ -32,6 +34,32 @@ const authorSelect = {
   select: { id: true, name: true, username: true },
 } as const;
 
+/** Parse the page's JSON infobox column into a clean InfoboxField[] (or null). */
+function parseInfobox(value: Prisma.JsonValue | null | undefined): InfoboxField[] | null {
+  if (!Array.isArray(value)) return null;
+  const rows: InfoboxField[] = [];
+  for (const item of value) {
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      const { label, value: v } = item as Record<string, unknown>;
+      if (typeof label === "string" && typeof v === "string") {
+        rows.push({ label, value: v });
+      }
+    }
+  }
+  return rows.length > 0 ? rows : null;
+}
+
+/** Normalize a submitted infobox for storage: trim, drop blank-label rows,
+ *  store SQL NULL when nothing remains. */
+function normalizeInfobox(
+  input: InfoboxField[] | null | undefined,
+): Prisma.InputJsonValue | typeof Prisma.DbNull {
+  const rows = (input ?? [])
+    .map((f) => ({ label: f.label.trim(), value: f.value.trim() }))
+    .filter((f) => f.label.length > 0);
+  return rows.length > 0 ? rows : Prisma.DbNull;
+}
+
 // ---------------------------------------------------------------------------
 // Reads (public)
 // ---------------------------------------------------------------------------
@@ -45,6 +73,7 @@ export async function getPage(slug: string): Promise<WikiPageFull | null> {
       slug: true,
       content: true,
       summary: true,
+      infobox: true,
       createdAt: true,
       updatedAt: true,
       author: authorSelect,
@@ -66,6 +95,7 @@ export async function getPage(slug: string): Promise<WikiPageFull | null> {
     slug: page.slug,
     content: page.content,
     summary: page.summary,
+    infobox: parseInfobox(page.infobox),
     createdAt: page.createdAt,
     updatedAt: page.updatedAt,
     author: page.author,
@@ -201,6 +231,7 @@ export async function createPage(input: PageInput): Promise<ActionResult<{ slug:
         slug,
         content: input.content,
         summary: input.summary ?? null,
+        infobox: normalizeInfobox(input.infobox),
         authorId: user.id,
         categories: {
           create: categoryIds.map((categoryId) => ({ categoryId })),
@@ -271,6 +302,7 @@ export async function updatePage(
           slug: newSlug,
           content: input.content,
           summary: input.summary ?? null,
+          infobox: normalizeInfobox(input.infobox),
           // authorId intentionally left unchanged
         },
       });
