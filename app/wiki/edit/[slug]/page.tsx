@@ -28,6 +28,7 @@ export default async function WikiEditPage({ params }: EditPageProps) {
     summary: page.summary ?? "",
     content: page.content,
     categorySlugs: page.categories.map((c) => c.slug),
+    infobox: page.infobox ?? [],
   };
 
   return (

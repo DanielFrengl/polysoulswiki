@@ -32,6 +32,8 @@ model User {
   accounts      Account[]
   authoredPages WikiPage[]     @relation("PageAuthor")
   revisions     PageRevision[] @relation("RevisionEditor")
+  talkMessages  TalkMessage[]  @relation("TalkAuthor")
+  watches       Watch[]
 
   @@map("user")
 }
@@ -93,14 +95,17 @@ model WikiPage {
   slug      String   @unique
   content   String // current rendered HTML (from Tiptap)
   summary   String? // short description / lead
+  infobox   Json? // optional structured sidebar: [{ label, value }]
   authorId  String?
   author    User?    @relation("PageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  categories WikiPageCategory[]
-  revisions  PageRevision[]
-  redirects  WikiRedirect[] // redirect slugs that point at this page
+  categories   WikiPageCategory[]
+  revisions    PageRevision[]
+  redirects    WikiRedirect[] // redirect slugs that point at this page
+  talkMessages TalkMessage[]
+  watchers     Watch[]
 
   @@index([slug])
   @@index([updatedAt])
@@ -160,4 +165,36 @@ model PageRevision {
 
   @@index([pageId, createdAt])
   @@map("page_revision")
+}
+
+// Talk/discussion page: threaded comments attached to a wiki page.
+// One level of nesting (top-level message → replies).
+model TalkMessage {
+  id        String        @id @default(cuid())
+  pageId    String
+  page      WikiPage      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?         @relation("TalkAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  parentId  String?
+  parent    TalkMessage?  @relation("TalkReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   TalkMessage[] @relation("TalkReplies")
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([pageId, createdAt])
+  @@index([parentId])
+  @@map("talk_message")
+}
+
+// Watchlist: a user follows a page to see its changes in their watchlist feed.
+model Watch {
+  userId    String
+  pageId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page      WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, pageId])
+  @@index([pageId])
+  @@map("watch")
 }

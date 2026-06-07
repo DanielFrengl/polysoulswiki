@@ -43,6 +43,10 @@ Writes (require editor; return `ActionResult`):
 Renaming a page (slug change in `updatePage`) auto-creates a redirect from the
 old slug; creating a page deletes any redirect that shadows its slug.
 
+`getPage` returns `infobox: InfoboxField[] | null` (parsed from the page's JSON
+column). `createPage`/`updatePage` accept `input.infobox` and persist it
+(dropping rows whose label is blank; `null`/empty clears the infobox).
+
 Every successful create/update of a page MUST also insert a `PageRevision`
 snapshot (title + content + comment + editorId). Calls `revalidatePath` for the
 affected routes.
@@ -58,6 +62,19 @@ affected routes.
 
 - `getPublicUser(username: string): Promise<PublicUser | null>`
 - `listUserContributions(userId: string, limit?: number): Promise<UserContribution[]>` // newest first
+
+### Talk / discussion — `app/wiki/talk.ts` ("use server")
+
+- `listTalkMessages(pageSlug: string): Promise<TalkMessageNode[]>` // top-level newest first, replies oldest first; sets `canDelete` per viewer
+- `postTalkMessage(input: TalkMessageInput): Promise<ActionResult<{ id: string }>>` // require any signed-in user; trims/validates non-empty body; replies must target a top-level message on the same page
+- `deleteTalkMessage(id: string): Promise<ActionResult>` // author of the message OR editor+; cascades to replies
+
+### Watchlist — `app/wiki/watch.ts` ("use server")
+
+- `isWatching(pageSlug: string): Promise<boolean>` // false when signed out
+- `watchPage(pageSlug: string): Promise<ActionResult<{ watching: true }>>` // require user
+- `unwatchPage(pageSlug: string): Promise<ActionResult<{ watching: false }>>` // require user
+- `listWatchlist(limit?: number): Promise<RecentChange[]>` // recent changes to the current user's watched pages, newest first; empty when signed out
 
 ### Admin — `app/wiki/admin/action.ts` ("use server")
 
@@ -83,6 +100,8 @@ is set, else writes to `public/uploads/` (dev). Validates image/* and ≤ 5 MB.
 - `/wiki/dashboard` — all pages + search
 - `/wiki/category/[slug]` — pages in a category
 - `/wiki/changes` — site-wide recent changes feed (public)
+- `/wiki/[slug]/talk` — discussion page (read public; post requires sign-in)
+- `/wiki/watchlist` — recent changes to the signed-in user's watched pages
 - `/wiki/user/[username]` — public profile + contributions (public)
 - `/wiki/admin` — manage pages, categories, redirects, users (admin; editors see content tabs only)
 - `/login`, `/register` — BetterAuth email/password
