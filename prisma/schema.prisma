@@ -100,10 +100,24 @@ model WikiPage {
 
   categories WikiPageCategory[]
   revisions  PageRevision[]
+  redirects  WikiRedirect[] // redirect slugs that point at this page
 
   @@index([slug])
   @@index([updatedAt])
   @@map("wiki_page")
+}
+
+// Wikipedia-style redirect: a slug (alias) that forwards to a real page.
+// Created manually or automatically when a page's slug changes.
+model WikiRedirect {
+  id        String   @id @default(cuid())
+  fromSlug  String   @unique
+  toPageId  String
+  toPage    WikiPage @relation(fields: [toPageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([toPageId])
+  @@map("wiki_redirect")
 }
 
 model WikiCategory {

@@ -43,3 +43,6 @@ next-env.d.ts
 
 # windows crash dumps
 *.stackdump
+
+# locally-uploaded images
+/public/uploads/

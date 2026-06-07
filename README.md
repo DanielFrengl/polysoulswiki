@@ -2,9 +2,10 @@
 
 The official community wiki for the game [PolySouls](https://store.steampowered.com/app/3604950/PolySouls/).
 
-A Wikipedia/game-wiki style documentation site: pages with a rich-text editor,
-categories, full-text search, revision history with diff & revert, role-based
-editing, and an admin panel.
+A Wikipedia/game-wiki style documentation site: pages with a rich-text editor
+(with image upload), categories, full-text search, revision history with diff &
+revert, a site-wide recent-changes feed, public user profiles with contribution
+history, redirects/aliases, role-based editing, and an admin panel.
 
 ## Tech stack
 
@@ -35,6 +36,8 @@ editing, and an admin panel.
      (or a local Postgres, see below).
    - `BETTER_AUTH_SECRET` — `npx @better-auth/cli@latest secret`
    - `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` — e.g. `http://localhost:3000`
+   - `BLOB_READ_WRITE_TOKEN` — *(optional)* Vercel Blob token for image uploads.
+     Without it, uploads are saved to `public/uploads/` in development.
 
 3. Apply the database schema and seed starter content:
 

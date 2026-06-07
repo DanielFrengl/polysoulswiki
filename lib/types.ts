@@ -58,6 +58,53 @@ export interface AdminUserRow {
   createdAt: Date;
 }
 
+// Phase 2 ------------------------------------------------------------------
+
+/** One entry in the site-wide recent-changes feed (a page revision). */
+export interface RecentChange {
+  id: string; // revision id
+  pageSlug: string;
+  pageTitle: string;
+  comment: string | null;
+  createdAt: Date;
+  editor: { id: string; name: string; username: string | null } | null;
+  isNewPage: boolean; // true if this is the page's first revision
+}
+
+/** A single contribution (revision) made by one user, for their profile. */
+export interface UserContribution {
+  id: string; // revision id
+  pageSlug: string;
+  pageTitle: string;
+  comment: string | null;
+  createdAt: Date;
+  isNewPage: boolean;
+}
+
+/** Public, read-only view of a user (the /wiki/user/[username] page). */
+export interface PublicUser {
+  id: string;
+  name: string;
+  username: string | null;
+  bio: string | null;
+  role: Role;
+  createdAt: Date;
+  contributionCount: number;
+}
+
+/** A redirect (alias slug → page) row for the admin panel. */
+export interface RedirectRow {
+  id: string;
+  fromSlug: string;
+  toPage: { slug: string; title: string };
+  createdAt: Date;
+}
+
+export interface RedirectInput {
+  fromSlug: string;
+  toPageSlug: string;
+}
+
 // Input payloads ------------------------------------------------------------
 
 export interface PageInput {

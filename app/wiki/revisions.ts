@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireEditor } from "@/lib/permissions";
 import { formatDate } from "@/lib/utils";
-import type { ActionResult, RevisionFull, RevisionSummary } from "@/lib/types";
+import type { ActionResult, RecentChange, RevisionFull, RevisionSummary } from "@/lib/types";
 
 function permissionError(err: unknown): string {
   if (err instanceof Error && (err.message === "UNAUTHORIZED" || err.message === "FORBIDDEN")) {
@@ -16,6 +16,41 @@ function permissionError(err: unknown): string {
 const editorSelect = {
   select: { id: true, name: true, username: true },
 } as const;
+
+export async function listRecentChanges(limit = 50): Promise<RecentChange[]> {
+  const rows = await prisma.pageRevision.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      pageId: true,
+      comment: true,
+      createdAt: true,
+      page: { select: { slug: true, title: true } },
+      editor: editorSelect,
+    },
+  });
+
+  if (rows.length === 0) return [];
+
+  const pageIds = [...new Set(rows.map((r) => r.pageId))];
+  const firsts = await prisma.pageRevision.groupBy({
+    by: ["pageId"],
+    where: { pageId: { in: pageIds } },
+    _min: { createdAt: true },
+  });
+  const firstAt = new Map(firsts.map((f) => [f.pageId, f._min.createdAt?.getTime()]));
+
+  return rows.map((row) => ({
+    id: row.id,
+    pageSlug: row.page.slug,
+    pageTitle: row.page.title,
+    comment: row.comment,
+    createdAt: row.createdAt,
+    editor: row.editor,
+    isNewPage: row.createdAt.getTime() === firstAt.get(row.pageId),
+  }));
+}
 
 export async function listRevisions(slug: string): Promise<RevisionSummary[]> {
   const page = await prisma.wikiPage.findUnique({

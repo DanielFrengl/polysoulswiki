@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
 import { getCurrentUser, canEdit, canAdmin } from "@/lib/permissions";
-import { listPages, listCategories } from "@/app/wiki/action";
+import { listPages, listCategories, listRedirects } from "@/app/wiki/action";
 import { listUsers } from "@/app/wiki/admin/action";
 import { Button } from "@/components/ui/button";
 import AdminTabs from "./AdminTabs";
@@ -19,10 +19,11 @@ export default async function AdminPage() {
 
   const isAdmin = canAdmin(user?.role);
 
-  const [pages, categories, users] = await Promise.all([
+  const [pages, categories, users, redirects] = await Promise.all([
     listPages(),
     listCategories(),
     isAdmin ? listUsers() : Promise.resolve(null),
+    listRedirects(),
   ]);
 
   return (
@@ -42,7 +43,7 @@ export default async function AdminPage() {
         </Button>
       </div>
 
-      <AdminTabs pages={pages} categories={categories} users={users} />
+      <AdminTabs pages={pages} categories={categories} users={users} redirects={redirects} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { getPage } from "@/app/wiki/action";
+import { getPage, getRedirect } from "@/app/wiki/action";
 import { listRevisions } from "@/app/wiki/revisions";
 import { getCurrentUser } from "@/lib/permissions";
 import { canEdit } from "@/lib/permissions";
@@ -22,6 +22,7 @@ import PageActions from "@/components/wiki/PageActions";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -34,11 +35,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function WikiPage({ params }: PageProps) {
+export default async function WikiPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const { from } = await searchParams;
 
   const [page, user] = await Promise.all([getPage(slug), getCurrentUser()]);
-  if (!page) notFound();
+
+  if (!page) {
+    const redir = await getRedirect(slug);
+    if (redir) {
+      redirect(`/wiki/${redir.toSlug}?from=${encodeURIComponent(slug)}`);
+    }
+    notFound();
+  }
 
   const revisions = await listRevisions(slug);
   const lastEditor = revisions[0]?.editor ?? page.author;
@@ -76,6 +85,13 @@ export default async function WikiPage({ params }: PageProps) {
 
             {page.summary && (
               <p className="mt-3 text-lg text-muted-foreground">{page.summary}</p>
+            )}
+
+            {from && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Redirected from{" "}
+                <span className="font-mono">{decodeURIComponent(from)}</span>
+              </p>
             )}
 
             {page.categories.length > 0 && (

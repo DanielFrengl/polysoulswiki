@@ -10,6 +10,8 @@ import type {
   CategorySummary,
   CategoryWithCount,
   PageInput,
+  RedirectInput,
+  RedirectRow,
   WikiPageFull,
   WikiPageSummary,
 } from "@/lib/types";
@@ -132,6 +134,28 @@ export async function getPagesInCategory(categorySlug: string): Promise<WikiPage
   return rows;
 }
 
+export async function getRedirect(slug: string): Promise<{ toSlug: string } | null> {
+  const row = await prisma.wikiRedirect.findUnique({
+    where: { fromSlug: slug },
+    select: { toPage: { select: { slug: true } } },
+  });
+  if (!row) return null;
+  return { toSlug: row.toPage.slug };
+}
+
+export async function listRedirects(): Promise<RedirectRow[]> {
+  const rows = await prisma.wikiRedirect.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      fromSlug: true,
+      createdAt: true,
+      toPage: { select: { slug: true, title: true } },
+    },
+  });
+  return rows;
+}
+
 // ---------------------------------------------------------------------------
 // Writes — pages (require editor)
 // ---------------------------------------------------------------------------
@@ -167,6 +191,9 @@ export async function createPage(input: PageInput): Promise<ActionResult<{ slug:
     }
 
     const categoryIds = input.categorySlugs ? await resolveCategoryIds(input.categorySlugs) : [];
+
+    // A real page takes precedence over any redirect at the same slug.
+    await prisma.wikiRedirect.deleteMany({ where: { fromSlug: slug } });
 
     const page = await prisma.wikiPage.create({
       data: {
@@ -266,6 +293,18 @@ export async function updatePage(
           editorId: user.id,
         },
       });
+
+      // When the slug changes: keep old links working by creating a redirect
+      // from the old slug to this page, and remove any redirect that pointed
+      // at the new slug (the page now owns it directly).
+      if (newSlug !== existing.slug) {
+        await tx.wikiRedirect.upsert({
+          where: { fromSlug: existing.slug },
+          create: { fromSlug: existing.slug, toPageId: existing.id },
+          update: { toPageId: existing.id },
+        });
+        await tx.wikiRedirect.deleteMany({ where: { fromSlug: newSlug } });
+      }
     });
 
     revalidatePath("/wiki/dashboard");
@@ -438,6 +477,79 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
 
     revalidatePath("/wiki/admin");
     revalidatePath(`/wiki/category/${existing.slug}`);
+
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return { ok: false, error: permissionError(err) };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Writes — redirects (require editor)
+// ---------------------------------------------------------------------------
+
+export async function createRedirect(
+  input: RedirectInput,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    await requireEditor();
+
+    const fromSlug = slugify(input.fromSlug);
+    if (!isValidSlug(fromSlug)) {
+      return { ok: false, error: "Invalid slug." };
+    }
+
+    // A page already occupying that slug would make the redirect unreachable.
+    const pageClash = await prisma.wikiPage.findUnique({
+      where: { slug: fromSlug },
+      select: { id: true },
+    });
+    if (pageClash) {
+      return { ok: false, error: "A page already uses that slug." };
+    }
+
+    const target = await prisma.wikiPage.findUnique({
+      where: { slug: input.toPageSlug },
+      select: { id: true, slug: true },
+    });
+    if (!target) {
+      return { ok: false, error: "Target page not found." };
+    }
+
+    // Self-loop guard.
+    if (fromSlug === target.slug) {
+      return { ok: false, error: "A redirect cannot point to itself." };
+    }
+
+    const existing = await prisma.wikiRedirect.findUnique({
+      where: { fromSlug },
+      select: { id: true },
+    });
+    if (existing) {
+      return { ok: false, error: "That redirect already exists." };
+    }
+
+    const redirect = await prisma.wikiRedirect.create({
+      data: { fromSlug, toPageId: target.id },
+      select: { id: true },
+    });
+
+    revalidatePath("/wiki/admin");
+    revalidatePath(`/wiki/${fromSlug}`);
+
+    return { ok: true, data: { id: redirect.id } };
+  } catch (err) {
+    return { ok: false, error: permissionError(err) };
+  }
+}
+
+export async function deleteRedirect(id: string): Promise<ActionResult> {
+  try {
+    await requireEditor();
+
+    await prisma.wikiRedirect.delete({ where: { id } });
+
+    revalidatePath("/wiki/admin");
 
     return { ok: true, data: undefined };
   } catch (err) {

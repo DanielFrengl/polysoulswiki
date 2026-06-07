@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor as TiptapEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -19,6 +20,7 @@ import {
   ListOrdered,
   Link as LinkIcon,
   Image as ImageIcon,
+  Upload,
   Quote,
   Code,
   Table as TableIcon,
@@ -30,6 +32,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface EditorProps {
   initialContent: string;
@@ -64,6 +67,33 @@ function ToolbarButton({
 }
 
 function Toolbar({ editor }: { editor: TiptapEditor }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    setUploading(true);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        toast.error(data.error ?? "Upload failed");
+      } else {
+        editor.chain().focus().setImage({ src: data.url }).run();
+      }
+    } catch {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const addLink = () => {
     const previous = editor.getAttributes("link").href as string | undefined;
     const url = window.prompt("Link URL", previous ?? "https://");
@@ -165,6 +195,20 @@ function Toolbar({ editor }: { editor: TiptapEditor }) {
       <ToolbarButton label="Insert image by URL" onClick={addImage}>
         <ImageIcon className="size-4" />
       </ToolbarButton>
+      <ToolbarButton
+        label="Upload image"
+        disabled={uploading}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <Upload className="size-4" />
+      </ToolbarButton>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
       <ToolbarButton
         label="Insert table"
         onClick={() =>

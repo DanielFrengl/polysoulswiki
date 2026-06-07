@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Moon, Sun, LayoutDashboard, FolderTree, Shield, User, LogOut } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, FolderTree, Shield, User, LogOut, Activity } from "lucide-react";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export default function NavBar() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const user = session?.user as
-    | { name: string; email: string; role?: string }
+    | { name: string; email: string; role?: string; username?: string | null }
     | undefined;
   const canEdit = user?.role === "editor" || user?.role === "admin";
 
@@ -84,6 +84,12 @@ export default function NavBar() {
             <Link href="/wiki/categories">
               <FolderTree className="size-4" />
               Categories
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/wiki/changes">
+              <Activity className="size-4" />
+              Recent changes
             </Link>
           </Button>
         </nav>
@@ -122,6 +128,14 @@ export default function NavBar() {
                     Profile
                   </Link>
                 </DropdownMenuItem>
+                {user.username && (
+                  <DropdownMenuItem asChild>
+                    <Link href={`/wiki/user/${user.username}`}>
+                      <Activity className="size-4" />
+                      My contributions
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 {canEdit && (
                   <DropdownMenuItem asChild>
                     <Link href="/wiki/admin">

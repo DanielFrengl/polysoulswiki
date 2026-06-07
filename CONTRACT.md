@@ -6,13 +6,14 @@ updating this file.
 
 ## Stack
 
-- Next.js 15 (App Router, RSC), React 19, TypeScript strict.
+- Next.js 16 (App Router, RSC, Turbopack), React 19, TypeScript strict.
 - Prisma + Postgres (Neon). Client: `import { prisma } from "@/lib/prisma"`.
 - Auth: BetterAuth. Server session via `lib/permissions.ts`
   (`getCurrentUser`, `requireUser`, `requireEditor`, `requireAdmin`).
   Client: `lib/auth-client.ts` (`signIn`, `signUp`, `signOut`, `useSession`).
+  Route auth-gate lives in `proxy.ts` (Next 16 middleware convention).
 - UI: shadcn/ui (new-york, neutral), Tailwind v4. Components in `components/ui`.
-- Editor: Tiptap (`@tiptap/react`). Sanitize HTML with `dompurify` before render.
+- Editor: Tiptap (`@tiptap/react`). Sanitize HTML with `isomorphic-dompurify` before render.
 - Roles: `reader` < `editor` < `admin`. Editors+ can edit content; admins manage users.
 
 ## Server actions
@@ -26,6 +27,8 @@ Reads (public):
 - `listCategories(): Promise<CategoryWithCount[]>`
 - `getCategoryBySlug(slug: string): Promise<CategorySummary | null>`
 - `getPagesInCategory(categorySlug: string): Promise<WikiPageSummary[]>`
+- `getRedirect(slug: string): Promise<{ toSlug: string } | null>`
+- `listRedirects(): Promise<RedirectRow[]>`
 
 Writes (require editor; return `ActionResult`):
 - `createPage(input: PageInput): Promise<ActionResult<{ slug: string }>>`
@@ -34,6 +37,11 @@ Writes (require editor; return `ActionResult`):
 - `createCategory(input: CategoryInput): Promise<ActionResult<{ slug: string }>>`
 - `updateCategory(id: string, input: CategoryInput): Promise<ActionResult<{ slug: string }>>`
 - `deleteCategory(id: string): Promise<ActionResult>`
+- `createRedirect(input: RedirectInput): Promise<ActionResult<{ id: string }>>`
+- `deleteRedirect(id: string): Promise<ActionResult>`
+
+Renaming a page (slug change in `updatePage`) auto-creates a redirect from the
+old slug; creating a page deletes any redirect that shadows its slug.
 
 Every successful create/update of a page MUST also insert a `PageRevision`
 snapshot (title + content + comment + editorId). Calls `revalidatePath` for the
@@ -44,6 +52,12 @@ affected routes.
 - `listRevisions(slug: string): Promise<RevisionSummary[]>`        // newest first
 - `getRevision(id: string): Promise<RevisionFull | null>`
 - `revertToRevision(revisionId: string): Promise<ActionResult<{ slug: string }>>` // editor; creates a new revision
+- `listRecentChanges(limit?: number): Promise<RecentChange[]>`     // site-wide feed, newest first
+
+### Users — `app/wiki/users.ts` ("use server")
+
+- `getPublicUser(username: string): Promise<PublicUser | null>`
+- `listUserContributions(userId: string, limit?: number): Promise<UserContribution[]>` // newest first
 
 ### Admin — `app/wiki/admin/action.ts` ("use server")
 
@@ -54,16 +68,23 @@ affected routes.
 
 - `updateProfile(input: { name: string; username?: string; bio?: string }): Promise<ActionResult>` // require user
 
+### Image upload — `app/api/upload/route.ts` (POST, editor only)
+
+Multipart `file` field → `{ url }`. Uses Vercel Blob when `BLOB_READ_WRITE_TOKEN`
+is set, else writes to `public/uploads/` (dev). Validates image/* and ≤ 5 MB.
+
 ## Routes (App Router)
 
 - `/` → redirect `/wiki/home`
-- `/wiki/[slug]` — public page view (TOC, breadcrumbs, categories, metadata, edit/history buttons for editors)
+- `/wiki/[slug]` — public page view (TOC, breadcrumbs, categories, metadata, edit/history buttons for editors); unknown slug resolves a redirect (→ `?from=<slug>`) before 404
 - `/wiki/new` — create page (editor)
 - `/wiki/edit/[slug]` — edit page (editor)
 - `/wiki/[slug]/history` — revision list + diff + revert (view public, revert editor)
 - `/wiki/dashboard` — all pages + search
 - `/wiki/category/[slug]` — pages in a category
-- `/wiki/admin` — manage pages, categories, users (admin; editors see content tabs only)
+- `/wiki/changes` — site-wide recent changes feed (public)
+- `/wiki/user/[username]` — public profile + contributions (public)
+- `/wiki/admin` — manage pages, categories, redirects, users (admin; editors see content tabs only)
 - `/login`, `/register` — BetterAuth email/password
 - `/profile` — edit own profile
 

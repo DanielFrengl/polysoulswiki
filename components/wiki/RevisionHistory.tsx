@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -143,8 +144,21 @@ export default function RevisionHistory({
                         {index === 0 && <Badge variant="secondary">current</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {rev.editor?.username ?? rev.editor?.name ?? "Unknown"} ·{" "}
-                        {formatDate(rev.createdAt)}
+                        {rev.editor ? (
+                          rev.editor.username ? (
+                            <Link
+                              href={`/wiki/user/${rev.editor.username}`}
+                              className="hover:underline"
+                            >
+                              {rev.editor.name}
+                            </Link>
+                          ) : (
+                            rev.editor.name
+                          )
+                        ) : (
+                          "Unknown"
+                        )}{" "}
+                        · {formatDate(rev.createdAt)}
                       </p>
                       {rev.comment && (
                         <p className="mt-1 text-sm italic text-muted-foreground">
