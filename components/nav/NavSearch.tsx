@@ -36,11 +36,11 @@ export default function NavSearch() {
 
   useEffect(() => {
     const q = query.trim();
-    if (!q) {
-      setResults([]);
-      return;
-    }
     const timer = setTimeout(() => {
+      if (!q) {
+        setResults([]);
+        return;
+      }
       startTransition(async () => setResults(await searchPages(q)));
     }, 200);
     return () => clearTimeout(timer);

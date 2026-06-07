@@ -58,10 +58,10 @@ editing, and an admin panel.
 ### Local Postgres (optional alternative to Neon)
 
 ```bash
-docker compose up -d
+docker compose up -d   # starts Postgres on host port 5433
 # then set in .env:
-# DATABASE_URL="postgresql://polysouls:polysouls@localhost:5432/polysouls?schema=public"
-# DIRECT_URL="postgresql://polysouls:polysouls@localhost:5432/polysouls?schema=public"
+# DATABASE_URL="postgresql://polysouls:polysouls@localhost:5433/polysouls?schema=public"
+# DIRECT_URL="postgresql://polysouls:polysouls@localhost:5433/polysouls?schema=public"
 ```
 
 ## Scripts

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireEditor } from "@/lib/permissions";
+import { formatDate } from "@/lib/utils";
 import type { ActionResult, RevisionFull, RevisionSummary } from "@/lib/types";
 
 function permissionError(err: unknown): string {
@@ -62,6 +63,7 @@ export async function revertToRevision(
       select: {
         title: true,
         content: true,
+        createdAt: true,
         page: { select: { id: true, slug: true } },
       },
     });
@@ -79,7 +81,7 @@ export async function revertToRevision(
           pageId: page.id,
           title: revision.title,
           content: revision.content,
-          comment: `Reverted to revision ${revisionId}`,
+          comment: `Reverted to the revision from ${formatDate(revision.createdAt)}`,
           editorId: user.id,
         },
       }),

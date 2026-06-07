@@ -2,16 +2,14 @@
 
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 
 export default function AuthLogo() {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
-
-  // Default to the light-on-dark logo until mounted to avoid hydration mismatch.
-  const src = mounted && resolvedTheme === "light" ? "/logo/logoblack.png" : "/logo/logo.png";
+  // resolvedTheme is undefined on the server and on the first client render, so
+  // both default to the light-on-dark logo — no hydration mismatch. next-themes
+  // then resolves the theme and re-renders with the correct asset.
+  const src = resolvedTheme === "light" ? "/logo/logoblack.png" : "/logo/logo.png";
 
   return (
     <Image

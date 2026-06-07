@@ -2,11 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
 // Routes that require an authenticated session. Fine-grained role checks
-// (editor/admin) happen in server actions / page guards, since middleware
+// (editor/admin) happen in server actions / page guards, since the proxy
 // runs on the edge and cannot read the DB.
 const PROTECTED_PREFIXES = ["/wiki/edit", "/wiki/new", "/wiki/admin", "/profile"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_PREFIXES.some(
