@@ -1,0 +1,200 @@
+// PolySouls Wiki — Prisma schema
+// Postgres (Neon). Auth tables follow BetterAuth conventions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Auth (BetterAuth)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  // App fields (exposed to BetterAuth via additionalFields)
+  role          String   @default("reader") // reader | editor | admin
+  username      String?  @unique
+  bio           String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  authoredPages WikiPage[]     @relation("PageAuthor")
+  revisions     PageRevision[] @relation("RevisionEditor")
+  talkMessages  TalkMessage[]  @relation("TalkAuthor")
+  watches       Watch[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ---------------------------------------------------------------------------
+// Wiki
+// ---------------------------------------------------------------------------
+
+model WikiPage {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  content   String // current rendered HTML (from Tiptap)
+  summary   String? // short description / lead
+  infobox   Json? // optional structured sidebar: [{ label, value }]
+  authorId  String?
+  author    User?    @relation("PageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categories   WikiPageCategory[]
+  revisions    PageRevision[]
+  redirects    WikiRedirect[] // redirect slugs that point at this page
+  talkMessages TalkMessage[]
+  watchers     Watch[]
+
+  @@index([slug])
+  @@index([updatedAt])
+  @@map("wiki_page")
+}
+
+// Wikipedia-style redirect: a slug (alias) that forwards to a real page.
+// Created manually or automatically when a page's slug changes.
+model WikiRedirect {
+  id        String   @id @default(cuid())
+  fromSlug  String   @unique
+  toPageId  String
+  toPage    WikiPage @relation(fields: [toPageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([toPageId])
+  @@map("wiki_redirect")
+}
+
+model WikiCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pages WikiPageCategory[]
+
+  @@map("wiki_category")
+}
+
+// Explicit join table (page <-> category, many-to-many)
+model WikiPageCategory {
+  pageId     String
+  categoryId String
+  page       WikiPage     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  category   WikiCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  assignedAt DateTime     @default(now())
+
+  @@id([pageId, categoryId])
+  @@index([categoryId])
+  @@map("wiki_page_category")
+}
+
+// One row per save = full content snapshot (wiki-style revision history)
+model PageRevision {
+  id        String   @id @default(cuid())
+  pageId    String
+  page      WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  comment   String? // edit summary, like Wikipedia
+  editorId  String?
+  editor    User?    @relation("RevisionEditor", fields: [editorId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([pageId, createdAt])
+  @@map("page_revision")
+}
+
+// Talk/discussion page: threaded comments attached to a wiki page.
+// One level of nesting (top-level message → replies).
+model TalkMessage {
+  id        String        @id @default(cuid())
+  pageId    String
+  page      WikiPage      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?         @relation("TalkAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  parentId  String?
+  parent    TalkMessage?  @relation("TalkReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   TalkMessage[] @relation("TalkReplies")
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([pageId, createdAt])
+  @@index([parentId])
+  @@map("talk_message")
+}
+
+// Watchlist: a user follows a page to see its changes in their watchlist feed.
+model Watch {
+  userId    String
+  pageId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page      WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, pageId])
+  @@index([pageId])
+  @@map("watch")
+}

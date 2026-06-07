@@ -1,26 +1,27 @@
-"use client";
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/permissions";
+import AuthLogo from "@/components/auth/AuthLogo";
+import RegisterForm from "@/components/auth/RegisterForm";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import { RegisterForm } from "@/components/register-form";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+export const metadata = {
+  title: "Create account — PolySouls Wiki",
+};
 
-export default function RegisterPage() {
-  const { resolvedTheme } = useTheme();
-  const [imgPath, setImgPath] = useState("/logo/logo.png");
-
-  useEffect(() => {
-    if (resolvedTheme === "dark") {
-      setImgPath("/logo/logo.png");
-    } else {
-      setImgPath("/logo/logoblack.png");
-    }
-  }, [resolvedTheme]);
+export default async function RegisterPage() {
+  const user = await getCurrentUser();
+  if (user) redirect("/wiki/home");
 
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <img src={imgPath} className="h-20 w-auto" alt="Logo" />
-        <RegisterForm />
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+      <div className="flex w-full max-w-sm flex-col items-center gap-6">
+        <AuthLogo />
+        <div className="w-full">
+          <Suspense fallback={<Skeleton className="h-[28rem] w-full rounded-xl" />}>
+            <RegisterForm />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

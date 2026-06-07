@@ -1,51 +1,40 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createContext, useContext } from "react";
+import { authClient } from "@/lib/auth-client";
 
-// Type for Auth Context
+type SessionUser = {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  role?: string;
+  username?: string | null;
+  bio?: string | null;
+};
+
 interface AuthContextType {
-  user: any;
+  user: SessionUser | null;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Auth Provider Component
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if the user is logged in
-    const checkUser = async () => {
-      const { data } = await createClient.auth.getSession();
-      setUser(data.session?.user || null);
-      setLoading(false);
-    };
-
-    checkUser();
-
-    // Listen for auth state changes
-    const { data: listener } = createClient.auth.onAuthStateChange(
-      (_, session) => {
-        setUser(session?.user || null);
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
+  const { data: session, isPending } = authClient.useSession();
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider
+      value={{
+        user: (session?.user as SessionUser | undefined) ?? null,
+        loading: isPending,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use Auth Context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");

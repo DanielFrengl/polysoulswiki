@@ -27,3 +27,14 @@ export function formatDateTime(dateString: string) {
   };
   return new Date(dateString).toLocaleDateString("en-US", options);
 }
+
+/** Format a Date (or date-like) as e.g. "June 6, 2026, 02:30 PM". */
+export function formatDate(date: Date | string | number) {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
