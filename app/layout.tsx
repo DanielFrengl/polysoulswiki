@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "@/components/nav/NavBar";
+import Footer from "@/components/nav/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
@@ -25,8 +26,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <NavBar />
-            <main>{children}</main>
+            <div className="flex min-h-screen flex-col">
+              <NavBar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
             <Toaster richColors />
           </ThemeProvider>
         </AuthProvider>

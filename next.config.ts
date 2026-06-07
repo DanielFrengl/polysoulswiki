@@ -6,6 +6,16 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  images: {
+    // Steam CDN hosts for the game's screenshots / capsule art used on the
+    // landing page. Steam serves the same assets from several mirror hosts.
+    remotePatterns: [
+      { protocol: "https", hostname: "shared.akamai.steamstatic.com" },
+      { protocol: "https", hostname: "shared.fastly.steamstatic.com" },
+      { protocol: "https", hostname: "shared.cloudflare.steamstatic.com" },
+      { protocol: "https", hostname: "cdn.akamai.steamstatic.com" },
+    ],
+  },
 };
 
 export default nextConfig;
